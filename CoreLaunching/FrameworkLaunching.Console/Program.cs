@@ -22,6 +22,7 @@ namespace CoreLaunching.Console
             try
             {
                 mgr.LoadJson(front + verDir + @"Test.json");
+
             }
             catch
             {
