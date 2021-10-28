@@ -30,7 +30,9 @@ namespace CoreLaunching
             var request = WebRequest.Create(url) as HttpWebRequest; //设置参数
             var response = request.GetResponse() as HttpWebResponse; //发送请求并获取相应回应数据
             var responseStream = response.GetResponseStream(); //直到request.GetResponse()程序才开始向目标网页发送Post请求
-            var stream = new FileStream(path, FileMode.Create); //创建本地文件写入流
+            var fileName = Path.GetFileName(url);
+            var fullPath = path + fileName;
+            var stream = new FileStream(fullPath, FileMode.Create); //创建本地文件写入流
             var bArr = new byte[1024];
             int size = responseStream.Read(bArr, 0, (int)bArr.Length);
             while (size > 0)

@@ -27,7 +27,7 @@ namespace CoreLaunching.Console
             {
 
             }
-            (new cl.Downloader()).NormalDownload(@"https://launchermeta.mojang.com/mc/game/version_manifest.json", @"X:\0.json");
+            (new cl.Downloader()).NormalDownload(@"https://launchermeta.mojang.com/mc/game/version_manifest.json",@"X:\");
         }
     }
 }
