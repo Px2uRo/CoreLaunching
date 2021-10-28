@@ -9,6 +9,9 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
+            var tempDirPath = Environment.GetEnvironmentVariable("TEMP") + @"\CoreLaunching\";
+            (new DirectoryInfo(tempDirPath)).Create();
+
             DirectoryInfo dir = new DirectoryInfo(@"..\.minecraft");
             dir.Create();
 
@@ -27,7 +30,8 @@ namespace CoreLaunching.Console
             {
 
             }
-            (new cl.Downloader()).NormalDownload(@"https://launchermeta.mojang.com/mc/game/version_manifest.json",@"X:\");
+            (new cl.Downloader()).NormalDownload(@"https://launchermeta.mojang.com/mc/game/version_manifest.json",tempDirPath);
         }
     }
 }
+ 
