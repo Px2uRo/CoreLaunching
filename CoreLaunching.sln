@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31507.150
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32104.313
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreLaunching", "CoreLaunching\CoreLaunching\CoreLaunching.csproj", "{2B2C8A82-2D67-4C76-A907-C9D2F2AB2FF5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreLaunching.Console", "CoreLaunching\CoreLaunching.Console\CoreLaunching.Console.csproj", "{DECC700B-FE9B-40DF-B33B-E9C84033CD94}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreLaunching.Wpf", "CoreLaunching.Wpf\CoreLaunching.Wpf.csproj", "{20D12234-3394-4B19-A7A1-95CEE0A3D102}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,22 @@ Global
 		{DECC700B-FE9B-40DF-B33B-E9C84033CD94}.Release|x64.Build.0 = Release|Any CPU
 		{DECC700B-FE9B-40DF-B33B-E9C84033CD94}.Release|x86.ActiveCfg = Release|Any CPU
 		{DECC700B-FE9B-40DF-B33B-E9C84033CD94}.Release|x86.Build.0 = Release|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Debug|arm64.Build.0 = Debug|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Debug|x64.Build.0 = Debug|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Debug|x86.Build.0 = Debug|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Release|arm64.ActiveCfg = Release|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Release|arm64.Build.0 = Release|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Release|x64.ActiveCfg = Release|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Release|x64.Build.0 = Release|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Release|x86.ActiveCfg = Release|Any CPU
+		{20D12234-3394-4B19-A7A1-95CEE0A3D102}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
