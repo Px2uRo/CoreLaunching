@@ -43,18 +43,6 @@ namespace CoreLaunching
         public static string userProperties { get; set; }
         public static string userType { get; set; }
         public static string TargetJSON { get; set; }
-        Dictionary<string, string> ELTable = new Dictionary<string, string>
-        {
-            {"${auth_player_name}", PlayerName},
-            {"${version_name}",GameVersion },
-            {"${game_directory}",GameDir },
-            {"${assets_root}",assetsDir},
-            {"${assets_index_name}",assetIndex },
-            {"${auth_uuid}",uuid },
-            {"${auth_access_token}",accessToken },
-            {"${user_properties}",userProperties },
-            {"${user_type}",userType }
-        };
         public void Launch()
         {
             StreamReader loader = File.OpenText(TargetJSON);
@@ -62,10 +50,38 @@ namespace CoreLaunching
             JObject jsonObject = (JObject)JToken.ReadFrom(reader);//强制转换 一个抽象的 JSON 令牌 到一个 JSON 对象。
             var mainClass = " " + jsonObject["mainClass"]; //读取 JSON 里面的 mainClass 项目。
             var minecraftArguments = " " + jsonObject["minecraftArguments"]; //读取 JSON 里面的 minecraftArguments 项目。
+
             loader.Close();
 
-            minecraftArguments.Replace()
-
+            List<string> ELList = new List<string>
+            {
+            "${auth_player_name}",
+            "${version_name}",
+            "${game_directory}",
+            "${assets_root}",
+            "${assets_index_name}",
+            "${auth_uuid}",
+            "${auth_access_token}",
+            "${user_properties}",
+            "${user_type}",
+            };
+            List<string> ELConv = new List<string>
+            {
+            PlayerName,
+            GameVersion,
+            GameDir,
+            assetsDir,
+            assetIndex,
+            uuid,
+            accessToken,
+            userProperties,
+            userType,
+            };
+            for(int i = 0;i< ELList.Count; i++)
+            {
+                string mcargs = minecraftArguments.Replace(ELList[i],ELConv[i]);
+                minecraftArguments=mcargs;
+            }
             string FinalCommand = JavaPath + " " + OtherArguments + Memory +LauncherInfo+mainClass+minecraftArguments;
             Console.WriteLine(FinalCommand);
         }
