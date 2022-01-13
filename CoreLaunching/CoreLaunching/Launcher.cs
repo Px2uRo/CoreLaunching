@@ -13,6 +13,8 @@ namespace CoreLaunching
     {
         public static string JavaPath { get; set; }//指定 Java 路径
         public static string OtherArguments { get; set; }//指定额外参数
+        public static string classLibPath { get; set; }
+
         static string Memory;
         /// <summary>
         /// 分配内存
@@ -33,6 +35,8 @@ namespace CoreLaunching
         {
             LauncherInfo = " "+ "-Dminecraft.launcher.brand=" + Name +" " + "-Dminecraft.launcher.version="+Version;
         }
+
+        #region MCArgs
         public static string PlayerName { get; set; }
         public static string GameVersion { get; set; }
         public static string GameDir { get; set; }
@@ -43,6 +47,29 @@ namespace CoreLaunching
         public static string userProperties { get; set; }
         public static string userType { get; set; }
         public static string TargetJSON { get; set; }
+        #endregion
+
+        static string OSNameVersion;
+        public void SetOSNameVersion(string Name,string Version)
+        {
+            OSNameVersion = " " + "-Dos.name=" + @"""" + Name + @"""" + " " + "-Dos.version=" + Version;
+        }
+
+        class libInfo
+        {
+            public class downloads
+            {
+                public class artifact
+                {
+                    public static string path { get; set; }
+                    public static string sha1 { get; set; }
+                    public static string size { get; set; }
+                    public static string url { get; set; }
+                }
+            };
+            public static string name { get; set; }
+        }
+
         public void Launch()
         {
             StreamReader loader = File.OpenText(TargetJSON);
@@ -50,6 +77,8 @@ namespace CoreLaunching
             JObject jsonObject = (JObject)JToken.ReadFrom(reader);//强制转换 一个抽象的 JSON 令牌 到一个 JSON 对象。
             var mainClass = " " + jsonObject["mainClass"]; //读取 JSON 里面的 mainClass 项目。
             var minecraftArguments = " " + jsonObject["minecraftArguments"]; //读取 JSON 里面的 minecraftArguments 项目。
+            JToken library = jsonObject["libraries"];
+            List<libInfo> libInfos = JsonConvert.DeserializeObject<List<libInfo>>(library.ToString());
 
             loader.Close();
 
@@ -79,10 +108,17 @@ namespace CoreLaunching
             };
             for(int i = 0;i< ELList.Count; i++)
             {
-                string mcargs = minecraftArguments.Replace(ELList[i],ELConv[i]);
-                minecraftArguments=mcargs;
+                minecraftArguments = minecraftArguments.Replace(ELList[i],ELConv[i]);
             }
-            string FinalCommand = JavaPath + " " + OtherArguments + Memory +LauncherInfo+mainClass+minecraftArguments;
+            ELList.Clear();
+            ELConv.Clear();
+            string cpCommandLine = @" -cp """;
+            for(int i = 0; i < libInfos.Count; i++)
+            {
+                cpCommandLine = cpCommandLine + classLibPath + libInfo.downloads.artifact.path[i] + ";";
+            }
+            cpCommandLine = cpCommandLine + @"""";
+            string FinalCommand = JavaPath + " " + OtherArguments +OSNameVersion +LauncherInfo+cpCommandLine+mainClass+minecraftArguments + Memory;
             Console.WriteLine(FinalCommand);
         }
     }
