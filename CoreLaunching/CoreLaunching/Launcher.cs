@@ -54,22 +54,22 @@ namespace CoreLaunching
         {
             OSNameVersion = " " + "-Dos.name=" + @"""" + Name + @"""" + " " + "-Dos.version=" + Version;
         }
-
+        public class downloads
+        {
+            public artifact artifact;
+        }
+        public class artifact
+        {
+            public string path;
+            public string sha1;
+            public string size;
+            public string url;
+        }
         public class libInfo
         {
-            public class downloads
-            {
-                public  class artifact
-                {
-                    public static string path { get; set; }
-                    public static string sha1 { get; set; }
-                    public static string size { get; set; }
-                    public static string url { get; set; }
-                }
-            };
-            public static string name { get; set; }
+            public downloads downloads;
+            public string name;
         }
-
         public void Launch()
         {
             StreamReader loader = File.OpenText(TargetJSON);
@@ -78,8 +78,7 @@ namespace CoreLaunching
             var mainClass = " " + jsonObject["mainClass"]; //读取 JSON 里面的 mainClass 项目。
             var minecraftArguments = " " + jsonObject["minecraftArguments"]; //读取 JSON 里面的 minecraftArguments 项目。
             JToken library = jsonObject["libraries"];
-            library=library.ToString();
-            List<libInfo.downloads.artifact> libInfos = JsonConvert.DeserializeObject<List<libInfo.downloads.artifact>>(library.ToString());
+            List<libInfo> libInfos = JsonConvert.DeserializeObject<List<libInfo>>(library.ToString());
 
             loader.Close();
 
@@ -116,7 +115,7 @@ namespace CoreLaunching
             string cpCommandLine = @" -cp """;
             for(int i = 0; i < libInfos.Count; i++)
             {
-                cpCommandLine = cpCommandLine + classLibPath + libInfos[i] + ";";
+                cpCommandLine = cpCommandLine + classLibPath + libInfos[i].downloads.artifact.path + ";";
             }
             cpCommandLine = cpCommandLine + @"""";
             string FinalCommand = JavaPath + " " + OtherArguments +OSNameVersion +LauncherInfo+cpCommandLine+mainClass+minecraftArguments + Memory;
