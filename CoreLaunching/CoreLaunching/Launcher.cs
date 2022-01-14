@@ -29,8 +29,8 @@ namespace CoreLaunching
         /// <summary>
         /// 设置启动器信息
         /// </summary>
-        /// <param name="Name"></param>
-        /// <param name="Version"></param>
+        /// <param name="Name">OS名称</param>
+        /// <param name="Version">OS版本</param>
         public void SetLauncherInfo(string Name,string Version)
         {
             LauncherInfo = " "+ "-Dminecraft.launcher.brand=" + Name +" " + "-Dminecraft.launcher.version="+Version;
@@ -55,11 +55,11 @@ namespace CoreLaunching
             OSNameVersion = " " + "-Dos.name=" + @"""" + Name + @"""" + " " + "-Dos.version=" + Version;
         }
 
-        class libInfo
+        public class libInfo
         {
             public class downloads
             {
-                public class artifact
+                public  class artifact
                 {
                     public static string path { get; set; }
                     public static string sha1 { get; set; }
@@ -78,7 +78,8 @@ namespace CoreLaunching
             var mainClass = " " + jsonObject["mainClass"]; //读取 JSON 里面的 mainClass 项目。
             var minecraftArguments = " " + jsonObject["minecraftArguments"]; //读取 JSON 里面的 minecraftArguments 项目。
             JToken library = jsonObject["libraries"];
-            List<libInfo> libInfos = JsonConvert.DeserializeObject<List<libInfo>>(library.ToString());
+            library=library.ToString();
+            List<libInfo.downloads.artifact> libInfos = JsonConvert.DeserializeObject<List<libInfo.downloads.artifact>>(library.ToString());
 
             loader.Close();
 
@@ -115,7 +116,7 @@ namespace CoreLaunching
             string cpCommandLine = @" -cp """;
             for(int i = 0; i < libInfos.Count; i++)
             {
-                cpCommandLine = cpCommandLine + classLibPath + libInfo.downloads.artifact.path[i] + ";";
+                cpCommandLine = cpCommandLine + classLibPath + libInfos[i] + ";";
             }
             cpCommandLine = cpCommandLine + @"""";
             string FinalCommand = JavaPath + " " + OtherArguments +OSNameVersion +LauncherInfo+cpCommandLine+mainClass+minecraftArguments + Memory;
