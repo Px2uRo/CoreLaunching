@@ -54,10 +54,6 @@ namespace CoreLaunching
         {
             OSNameVersion = " " + "-Dos.name=" + @"""" + Name + @"""" + " " + "-Dos.version=" + Version;
         }
-        public class downloads
-        {
-            public artifact artifact;
-        }
         public class artifact
         {
             public string path;
@@ -65,6 +61,11 @@ namespace CoreLaunching
             public string size;
             public string url;
         }
+        public class downloads
+        {
+            public artifact artifact;
+        }
+
         public class libInfo
         {
             public downloads downloads;
@@ -115,7 +116,10 @@ namespace CoreLaunching
             string cpCommandLine = @" -cp """;
             for(int i = 0; i < libInfos.Count; i++)
             {
-                cpCommandLine = cpCommandLine + classLibPath + libInfos[i].downloads.artifact.path + ";";
+                if(libInfos[i].downloads.artifact != null)
+                {
+                    cpCommandLine = cpCommandLine + classLibPath + libInfos[i].downloads.artifact.path.Replace(@"/",@"\") + ";";
+                }
             }
             cpCommandLine = cpCommandLine + @"""";
             string FinalCommand = JavaPath + " " + OtherArguments +OSNameVersion +LauncherInfo+cpCommandLine+mainClass+minecraftArguments + Memory;
