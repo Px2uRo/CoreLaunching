@@ -19,8 +19,8 @@ namespace CoreLaunching.ObjectTemples
         public artifact natives_linux;
         public artifact natives_osx;
         public artifact natives_windows;
-        public artifact natives_windows_x64;
-        public artifact natives_windows_x86;
+        public artifact natives_windows_64;
+        public artifact natives_windows_86;
     }
     public class natives
     {

@@ -30,7 +30,7 @@ namespace CoreLaunching
         /// <param name="MinMemory">最小内存</param>
         public void SetMemory(int MinMemory, int MaxMemory)
         {
-            Memory =" " + "-Xmx" + MaxMemory.ToString() + "m" + " " + "-Xmn" + MinMemory.ToString() + "m";
+            Memory =" " + "-Xmx" + MaxMemory.ToString() + "m" + " -Xmn" + MinMemory.ToString() + "m";
         }
         static string LauncherInfo;
         /// <summary>
@@ -92,6 +92,25 @@ namespace CoreLaunching
                         Console.WriteLine(ex.ToString());
                     }
                 }
+                else
+                {
+                    if (libInfos[i].natives != null && libInfos[i].downloads.classifiers.natives_windows_64 != null)
+                    {
+                        var tmp1 = libInfos[i].downloads.classifiers.natives_windows_64.path.ToString();
+                        tmp1 = tmp1.Replace(@"/", @"\");
+                        var tmp2 = classLibPath + @"\" + tmp1;
+                        tmp2 = tmp2.Replace("_", "-");
+                        FileInfo tmp2Info = new FileInfo(tmp2);
+                        try
+                        {
+                            ZipFile.ExtractToDirectory(tmp2, nativeLibPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.ToString());
+                        }
+                    }
+                }
             }
 
             List<string> ELList = new List<string>
@@ -131,7 +150,15 @@ namespace CoreLaunching
                 {
                     libInfos[i].downloads.artifact.path = libInfos[i].downloads.artifact.path.Replace(@"/", @"\");
                     libInfos[i].downloads.artifact.path = libInfos[i].downloads.artifact.path.Replace(@"_", @"-");
-                    cpCommandLine = cpCommandLine + classLibPath +@"\" + libInfos[i].downloads.artifact.path + ";";
+                    var File = new FileInfo(classLibPath + @"\" + libInfos[i].downloads.artifact.path);
+                    if (File.Exists==true)
+                    {
+                        cpCommandLine = cpCommandLine + classLibPath + @"\" + libInfos[i].downloads.artifact.path + ";";
+                    }
+                    else
+                    {
+                        cpCommandLine = cpCommandLine + classLibPath + @"\" + @"org\lwjgl\lwjgl\lwjgl_util\2.9.1\lwjgl_util-2.9.1.jar" + ";";
+                    }
                 }
             }
             cpCommandLine = cpCommandLine + clinetJarPath;
@@ -163,11 +190,12 @@ namespace CoreLaunching
             p.StartInfo.RedirectStandardError = true;//重定向标准错误输出
             p.StartInfo.CreateNoWindow = true;//不显示程序窗口
             p.Start();//启动程序
-            p.StandardInput.WriteLine(FinalCommand + "&exit");
+            p.StandardInput.WriteLine(FinalCommand+@"&exit");
             p.StandardInput.AutoFlush = true;
             string output = p.StandardOutput.ReadToEnd();
             p.WaitForExit();
             p.Close();
+            Console.WriteLine(output);
         }
     }
 }
