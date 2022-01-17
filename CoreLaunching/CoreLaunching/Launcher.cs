@@ -129,7 +129,9 @@ namespace CoreLaunching
             {
                 if(libInfos[i].downloads.artifact != null)
                 {
-                    cpCommandLine = cpCommandLine + classLibPath + libInfos[i].downloads.artifact.path.Replace(@"/",@"\") + ";";
+                    libInfos[i].downloads.artifact.path = libInfos[i].downloads.artifact.path.Replace(@"/", @"\");
+                    libInfos[i].downloads.artifact.path = libInfos[i].downloads.artifact.path.Replace(@"_", @"-");
+                    cpCommandLine = cpCommandLine + classLibPath +@"\" + libInfos[i].downloads.artifact.path + ";";
                 }
             }
             cpCommandLine = cpCommandLine + clinetJarPath;
