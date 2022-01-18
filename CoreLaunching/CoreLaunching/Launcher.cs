@@ -111,52 +111,63 @@ namespace CoreLaunching
             #region ExportDlls
             for (int i = 0; i < libInfoFormatted.Count; i++)
             {
-                if(libInfoFormatted[i].downloads.classifiers != null)
+                if(libInfoFormatted[i].downloads.artifact == null)
                 {
                     switch (libInfoFormatted[i].downloads.classifiers.natives_windows != null, System.Environment.Is64BitOperatingSystem == true)
                     {
                         case (true, true):
-                            var ReFotmattedLibPath1 = nativeLibExportPath + libInfoFormatted[i].downloads.classifiers.natives_windows.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
+                            var ReFotmattedLibPath1 = classLibPath+@"\" + libInfoFormatted[i].downloads.classifiers.natives_windows.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
                             try
                             {
                                 ZipFile.ExtractToDirectory(ReFotmattedLibPath1, nativeLibExportPath);
                             }
-                            catch
+                            catch(Exception ex)
                             {
-                                Console.WriteLine("解压失败，也许目标已存在");
+                                Console.WriteLine(ex);
                             }
                             break;
                         case (true, false):
-                            var ReFotmattedLibPath2 = nativeLibExportPath + libInfoFormatted[i].downloads.classifiers.natives_windows.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
+                            var ReFotmattedLibPath2 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
                             try
                             {
                                 ZipFile.ExtractToDirectory(ReFotmattedLibPath2, nativeLibExportPath);
                             }
-                            catch
+                            catch (Exception ex)
                             {
-                                Console.WriteLine("解压失败，也许目标已存在");
+                                Console.WriteLine(ex);
                             }
                             break;
                             case(false, true):
-                            var ReFotmattedLibPath3 = nativeLibExportPath + libInfoFormatted[i].downloads.classifiers.natives_windows_64.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
+                            var ReFotmattedLibPath3 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows_64.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
                             try
                             {
                                 ZipFile.ExtractToDirectory(ReFotmattedLibPath3, nativeLibExportPath);
                             }
-                            catch
+                            catch (Exception ex)
                             {
-                                Console.WriteLine("解压失败，也许目标已存在");
+                                Console.WriteLine(ex);
+                                if (new FileInfo(ReFotmattedLibPath3.Replace("64", "32")).Exists == true)
+                                {
+                                    try
+                                    {
+                                        ZipFile.ExtractToDirectory(ReFotmattedLibPath3.Replace("64", "32"), nativeLibExportPath);
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine(ex);   
+                                    }
+                                }
                             }
                             break;
                         case (false, false):
-                            var ReFotmattedLibPath4 = nativeLibExportPath + libInfoFormatted[i].downloads.classifiers.natives_windows_86.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
+                            var ReFotmattedLibPath4 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows_86.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
                             try
                             {
                                 ZipFile.ExtractToDirectory(ReFotmattedLibPath4, nativeLibExportPath);
                             }
-                            catch
+                            catch (Exception ex)
                             {
-                                Console.WriteLine("解压失败，也许目标已存在");
+                                Console.WriteLine(ex);
                             }
                             break;
                     }
