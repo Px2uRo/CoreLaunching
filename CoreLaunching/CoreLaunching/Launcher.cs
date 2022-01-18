@@ -20,7 +20,7 @@ namespace CoreLaunching
         public static string clinetJarPath { get; set; }
         public static string HeapDumpPath {get; set; }
         public static string log4jConfigurationFilePath { get; set; }
-        public static string nativeLibPath { get; set; }
+        public static string nativeLibExportPath { get; set; }
 
         static string Memory;
         /// <summary>
@@ -56,63 +56,128 @@ namespace CoreLaunching
         public static string TargetJSON { get; set; }
         #endregion
 
-        static string OSNameVersion;
-        public void SetOSNameVersion(string Name,string Version)
+        static string DebugOSNameVersion;
+        void SetOSNameVersion(string Name,string Version)
         {
-            OSNameVersion = " " + @"""-Dos.name=" + Name + @"""" + " " + "-Dos.version=" + Version;
+            DebugOSNameVersion = " " + @"""-Dos.name=" + Name + @"""" + " " + "-Dos.version=" + Version;
         }
-        public void Launch()
+
+        #region 自动获取系统版本并传参
+        /// <summary>
+        /// 自动获取版本并且传参数
+        /// </summary>
+        void AutoSystemVersion()
+        {
+            switch (System.Environment.OSVersion.Version.Major + "." + System.Environment.OSVersion.Version.Minor)
+            {
+                case "6.1":
+                    SetOSNameVersion("Windows7", "6.1");
+                    break;
+                case "6.2":
+                    SetOSNameVersion("Windows 8", "6.2");
+                    break;
+                case "6.3":
+                    SetOSNameVersion("Windows 8.1", "6.3");
+                    break;
+                case "10.0":
+                    SetOSNameVersion("Windows10", "10.0");
+                    break;
+            }
+        }
+        #endregion
+
+        string minecraftArguments;
+        string mainClass;
+        string cpCommandLine = @" -cp ";
+
+        #region 解析 JSON
+        /// <summary>
+        /// 自动解析 JSON 并处理 -cp 参数，并且解包。
+        /// </summary>
+        void JieXiJSON()
         {
             StreamReader loader = File.OpenText(TargetJSON);
             JsonTextReader reader = new JsonTextReader(loader);//NewtonJson读取文件。
             JObject jsonObject = (JObject)JToken.ReadFrom(reader);//强制转换 一个抽象的 JSON 令牌 到一个 JSON 对象。
-            var mainClass = " " + jsonObject["mainClass"]; //读取 JSON 里面的 mainClass 项目。
-            var minecraftArguments = " " + jsonObject["minecraftArguments"]; //读取 JSON 里面的 minecraftArguments 项目。
+            mainClass = " " + jsonObject["mainClass"]; //读取 JSON 里面的 mainClass 项目。
+            minecraftArguments = " " + jsonObject["minecraftArguments"]; //读取 JSON 里面的 minecraftArguments 项目。
             JToken library = jsonObject["libraries"];
             var libraryStr = library.ToString();
-            List<libInfo> libInfos = JsonConvert.DeserializeObject<List<libInfo>>(libraryStr.Replace("-","_"));
-
+            var libraryStrFormatted = libraryStr.Replace("_", "__");
+            libraryStrFormatted = libraryStrFormatted.Replace("-", "_");
+            List<libInfo> libInfos = JsonConvert.DeserializeObject<List<libInfo>>(libraryStr);
+            List<libInfo> libInfoFormatted = JsonConvert.DeserializeObject<List<libInfo>>(libraryStrFormatted);
             loader.Close();
-
-            for(int i = 0; i < libInfos.Count; i++)
+            #region ExportDlls
+            for (int i = 0; i < libInfoFormatted.Count; i++)
             {
-                if (libInfos[i].natives != null&&libInfos[i].downloads.classifiers.natives_windows!=null)
+                if(libInfoFormatted[i].downloads.classifiers != null)
                 {
-                    var tmp1 = libInfos[i].downloads.classifiers.natives_windows.path.ToString();
-                    tmp1 = tmp1.Replace(@"/", @"\");
-                    var tmp2 = classLibPath + @"\" + tmp1;
-                    tmp2 = tmp2.Replace("_", "-");
-                    FileInfo tmp2Info = new FileInfo(tmp2);
-                    try
+                    switch (libInfoFormatted[i].downloads.classifiers.natives_windows != null, System.Environment.Is64BitOperatingSystem == true)
                     {
-                        ZipFile.ExtractToDirectory(tmp2, nativeLibPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.ToString());
-                    }
-                }
-                else
-                {
-                    if (libInfos[i].natives != null && libInfos[i].downloads.classifiers.natives_windows_64 != null)
-                    {
-                        var tmp1 = libInfos[i].downloads.classifiers.natives_windows_64.path.ToString();
-                        tmp1 = tmp1.Replace(@"/", @"\");
-                        var tmp2 = classLibPath + @"\" + tmp1;
-                        tmp2 = tmp2.Replace("_", "-");
-                        FileInfo tmp2Info = new FileInfo(tmp2);
-                        try
-                        {
-                            ZipFile.ExtractToDirectory(tmp2, nativeLibPath);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.ToString());
-                        }
+                        case (true, true):
+                            var ReFotmattedLibPath1 = nativeLibExportPath + libInfoFormatted[i].downloads.classifiers.natives_windows.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
+                            try
+                            {
+                                ZipFile.ExtractToDirectory(ReFotmattedLibPath1, nativeLibExportPath);
+                            }
+                            catch
+                            {
+                                Console.WriteLine("解压失败，也许目标已存在");
+                            }
+                            break;
+                        case (true, false):
+                            var ReFotmattedLibPath2 = nativeLibExportPath + libInfoFormatted[i].downloads.classifiers.natives_windows.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
+                            try
+                            {
+                                ZipFile.ExtractToDirectory(ReFotmattedLibPath2, nativeLibExportPath);
+                            }
+                            catch
+                            {
+                                Console.WriteLine("解压失败，也许目标已存在");
+                            }
+                            break;
+                            case(false, true):
+                            var ReFotmattedLibPath3 = nativeLibExportPath + libInfoFormatted[i].downloads.classifiers.natives_windows_64.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
+                            try
+                            {
+                                ZipFile.ExtractToDirectory(ReFotmattedLibPath3, nativeLibExportPath);
+                            }
+                            catch
+                            {
+                                Console.WriteLine("解压失败，也许目标已存在");
+                            }
+                            break;
+                        case (false, false):
+                            var ReFotmattedLibPath4 = nativeLibExportPath + libInfoFormatted[i].downloads.classifiers.natives_windows_86.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
+                            try
+                            {
+                                ZipFile.ExtractToDirectory(ReFotmattedLibPath4, nativeLibExportPath);
+                            }
+                            catch
+                            {
+                                Console.WriteLine("解压失败，也许目标已存在");
+                            }
+                            break;
                     }
                 }
             }
-
+            #endregion
+            #region SetCpArg
+            for (int i = 0; i <libInfos.Count; i++)
+            {
+                if (libInfoFormatted[i].downloads.artifact != null)
+                {
+                    cpCommandLine = cpCommandLine + classLibPath + @"\" + libInfos[i].downloads.artifact.path.Replace(@"/", @"\") + ";";
+                }
+            }
+            #endregion
+        }
+        #endregion
+        public void Launch()
+        {
+            AutoSystemVersion();
+            JieXiJSON();
             List<string> ELList = new List<string>
             {
             "${auth_player_name}",
@@ -143,45 +208,14 @@ namespace CoreLaunching
             }
             ELList.Clear();
             ELConv.Clear();
-            string cpCommandLine = @" -cp ";
-            for(int i = 0; i < libInfos.Count; i++)
-            {
-                if(libInfos[i].downloads.artifact != null)
-                {
-                    libInfos[i].downloads.artifact.path = libInfos[i].downloads.artifact.path.Replace(@"/", @"\");
-                    libInfos[i].downloads.artifact.path = libInfos[i].downloads.artifact.path.Replace(@"_", @"-");
-                    var File = new FileInfo(classLibPath + @"\" + libInfos[i].downloads.artifact.path);
-                    if (File.Exists==true)
-                    {
-                        cpCommandLine = cpCommandLine + classLibPath + @"\" + libInfos[i].downloads.artifact.path + ";";
-                    }
-                    else
-                    {
-                        cpCommandLine = cpCommandLine + classLibPath + @"\" + @"org\lwjgl\lwjgl\lwjgl_util\2.9.1\lwjgl_util-2.9.1.jar" + ";";
-                    }
-                }
-            }
+
             cpCommandLine = cpCommandLine + clinetJarPath;
             clinetJarPath = @" -Dminecraft.client.jar=" + clinetJarPath;
-            nativeLibPath = @" -Djava.library.path=" + nativeLibPath;
+            nativeLibExportPath = @" -Djava.library.path=" + nativeLibExportPath;
             log4jConfigurationFilePath = @" -Dlog4j.configurationFile=" + log4jConfigurationFilePath;
             OtherArguments = " "+OtherArguments;
             HeapDumpPath = @" -XX:HeapDumpPath="+HeapDumpPath;
-            #region UselessCommand
-            Console.WriteLine(JavaPath);
-            Console.WriteLine(OSNameVersion);
-            Console.WriteLine(HeapDumpPath);
-            Console.WriteLine(nativeLibPath);
-            Console.WriteLine(LauncherInfo);
-            Console.WriteLine(clinetJarPath);
-            Console.WriteLine(cpCommandLine);
-            Console.WriteLine(Memory);
-            Console.WriteLine(OtherArguments);
-            Console.WriteLine(log4jConfigurationFilePath);
-            Console.WriteLine(mainClass);
-            Console.WriteLine(minecraftArguments);
-            #endregion
-            var FinalCommand = JavaPath + OSNameVersion + HeapDumpPath + nativeLibPath + LauncherInfo + clinetJarPath + cpCommandLine + Memory + OtherArguments + log4jConfigurationFilePath + mainClass + minecraftArguments;
+            var FinalCommand = JavaPath + DebugOSNameVersion + HeapDumpPath + nativeLibExportPath + LauncherInfo + clinetJarPath + cpCommandLine + Memory + OtherArguments + log4jConfigurationFilePath + mainClass + minecraftArguments;
             Process p = new Process();
             p.StartInfo.FileName = "cmd.exe";
             p.StartInfo.UseShellExecute = false;    //是否使用操作系统shell启动
