@@ -9,6 +9,11 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
+
+        }
+
+        void OldCommand1()
+        {
             cl.Launcher launcher = new cl.Launcher();
             cl.Launcher.JavaPath = @"""C:\Program Files\Java\jre1.8.0_291\bin\javaw.exe""";
             launcher.SetMemory(256, 1536);
@@ -34,6 +39,7 @@ namespace CoreLaunching.Console
             cl.Launcher.TargetJSON = @"C:\Users\Lenovo\AppData\Roaming\.minecraft\versions\1.7.10\1.7.10.json";
 
             launcher.Launch();
+
         }
     }
 }
