@@ -16,11 +16,6 @@ namespace CoreLaunching
     public class Downloader
     {
         /// <summary>
-        /// 这是通用路径，备用。
-        /// </summary>
-        private string _path;
-
-        /// <summary>
         /// C# 普通下载
         /// </summary>
         /// <param name="url">设置下载文件源</param>
