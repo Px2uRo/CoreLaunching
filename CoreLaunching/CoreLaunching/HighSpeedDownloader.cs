@@ -14,54 +14,73 @@ namespace CoreLaunching
         /// </summary>
     public class SuperDownloader
     {
-        public static bool[] threadEnd; //每个线程结束标志  
-        public static string[] fileNameEveryThread;//每个线程接收文件的文件名  
-        public static int[] fileStartEveryThread;//每个线程接收文件的起始位置  
-        public static int[] fileSizeEveryThread;//每个线程接收文件的大小  
-        public static string targetUrl;//接受文件的URL  
-        public static bool isHeBingLe;//文件合并标志  
-        public static int thread;//进程数
-        public class HttpFile
+        int thread;
+        string url;
+        FileStream fs;
+        HttpWebRequest request;
+        Stream ns;
+        byte[] nbytes;
+        int nreadsize;
+        /// <summary>
+        /// Muitl Thread Download void
+        /// </summary>
+        /// <param name="url">TargetFile</param>
+        /// <param name="threads">the number of the threads</param>
+        /// <param name="targetFolder">targetFolder</param>
+        public void Download(string url,int threads,string localTargetFolder)
         {
-            public int currectThreadNum;//Threade Number
-            public string fileName { get; set; }//FileName
-            public string streamUrl;//Url
-            public FileStream fs;
-            public byte[] nbytes;//HuanChongBytes
-            public HttpFile(int thread)//构造方法  
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(url);
+            localTargetFolder = localTargetFolder + @"\" + Path.GetFullPath(url);
+            int currectThread = 0;
+            string[] currectThreadtmpFileName;
+            bool[] threadIsDone;
+            bool MIXED;
+            byte[] nbytes = new byte[512];
+            Stream ns = null;
+            int downloadedSize;
+            int[] byteStartEveryThread;
+            int[] byteTotalEveryThread;
+            Console.WriteLine("Thread {0} is bigenning to recive", currectThread.ToString());
+            FileStream fs = new FileStream(localTargetFolder,FileMode.Create);
+            try
             {
-                currectThreadNum = thread;
-            }
-            public void receive(string url)
-            {
-                fileName = SuperDownloader.fileNameEveryThread[currectThreadNum];
-                streamUrl = url;
-                nbytes = new byte[512];
-                Console.WriteLine("Thread {0} is ready to recive", currectThreadNum.ToString());
-                fs = new FileStream(fileName, System.IO.FileMode.Create);
-                try
+                int sizeInAThreads = 
+                    (int)request.GetResponse().ContentLength / threads;//平均分配
+                int sizeInAthreadsEnd =sizeInAThreads + (int)request.GetResponse().ContentLength % threads;//Yushu 部分由最后一个线程完成
+                #region Genju xiancheng shu chushihua de shuju
+                currectThreadtmpFileName =new string[threads];
+                threadIsDone=new bool[threads];
+                byteTotalEveryThread=new int[threads];
+                byteStartEveryThread=new int[threads];
+                #endregion
+                for (int i = 0; i < threads; i++)
                 {
-                    HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(url);
-                    request.AddRange(SuperDownloader.fileStartEveryThread[currectThreadNum],
-                    SuperDownloader.fileStartEveryThread[currectThreadNum]+SuperDownloader.fileSizeEveryThread[currectThreadNum]);
-                    System.IO.Stream stream;
-                    stream = request.GetResponse().GetResponseStream();
-                    int nreadsize = stream.Read(nbytes, 0, 512);
-                    while(nreadsize > 0)
+                    threadIsDone[i] = false;
+                    currectThreadtmpFileName[i] = Path.GetFileName(localTargetFolder)+threads.ToString()+".tmp";
+                    if (i < threads - 1)
                     {
-                        fs.Write(nbytes, 0, nreadsize);
-                        nreadsize = stream.Read(nbytes, 0, 512);
-                        Console.WriteLine("Thread {0} is Now reciving", currectThreadNum.ToString());
+                        byteStartEveryThread[i] = sizeInAThreads * i;
+                        byteTotalEveryThread[i] = sizeInAThreads - 1;
                     }
-                    fs.Close();
+                    else
+                    {
+                        byteStartEveryThread[i] = sizeInAThreads * i;
+                        byteTotalEveryThread[i]=sizeInAthreadsEnd - 1;
+                    }
                 }
-                catch (Exception ex)
+                request.AddRange(byteStartEveryThread[currectThread], byteStartEveryThread[currectThread] + byteTotalEveryThread[currectThread]);
+                Thread[] threadk = new Thread[threads];
+                SuperDownloader[] superDownloader = new SuperDownloader[threads];
+                for (int i = 0; i < threads; i++)
                 {
-                    Console.WriteLine(ex.ToString());
-                    fs.Close();
+                    superDownloader[i] = new SuperDownloader(this,j);
+                    threadk[i] = Thread(new ThreadStart(superDownloader[i].Download));
+                    threadk[i].Start();
                 }
-
-                Console.WriteLine("Thread {0} isalready recived!", currectThreadNum.ToString());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
     }
