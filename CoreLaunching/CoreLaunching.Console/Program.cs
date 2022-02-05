@@ -9,10 +9,11 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
-
+            var hd = new HighSpeedDownloader(); 
+            hd.Start("https://download.openmpt.org/archive/openmpt/1.30/OpenMPT-1.30.02.00-portable-amd64.zip", @"X:\Test",32);
         }
 
-        void OldCommand1()
+        private static void OldTestCommand1()
         {
             cl.Launcher launcher = new cl.Launcher();
             cl.Launcher.JavaPath = @"""C:\Program Files\Java\jre1.8.0_291\bin\javaw.exe""";
@@ -41,6 +42,8 @@ namespace CoreLaunching.Console
             launcher.Launch();
 
         }
+    
+    
     }
 }
  
