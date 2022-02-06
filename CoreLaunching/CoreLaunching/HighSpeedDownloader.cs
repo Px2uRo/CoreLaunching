@@ -13,7 +13,7 @@ namespace CoreLaunching
         /// Manage Thread Files
         /// </summary>
 
-    class HttpFile
+    public class HttpFileD
     {
         #region 程序变量
         public bool[] threadw; //每个线程结束标志  
@@ -23,7 +23,7 @@ namespace CoreLaunching
         public string strurl;//接受文件的URL  
         public bool hb;//文件合并标志  
         public int thread;//进程数
-        public HttpFile(int thread)//构造方法  
+        public HttpFileD(int thread)//构造方法  
         {
             threadh = thread;
         }
@@ -40,7 +40,6 @@ namespace CoreLaunching
 
         void receive()//接收线程  
         {
-            filename = filenamew[threadh];
             ns = null;
             nbytes = new byte[512];
             nreadsize = 0;
@@ -54,11 +53,16 @@ namespace CoreLaunching
                 filestartw[threadh] + filesizew[threadh]);
                 ns = request.GetResponse().GetResponseStream();//获得接收流  
                 nreadsize = ns.Read(nbytes, 0, 512);
+                bool pritfed=false;
                 while (nreadsize > 0)
                 {
                     fs.Write(nbytes, 0, nreadsize);
                     nreadsize = ns.Read(nbytes, 0, 512);
-                    Console.WriteLine("线程" + threadh.ToString() + "正在接收");
+                    if(pritfed==false)
+                    {
+                        Console.WriteLine("线程" + threadh.ToString() + "正在接收");
+                        pritfed = true;
+                    }
                 }
                 fs.Close();
                 ns.Close();
@@ -72,7 +76,7 @@ namespace CoreLaunching
             threadw[threadh] = true;
         }
 
-        public void Start(string url,int threadNumber)
+        void voidStart(string url,int threadNumber)
         {
             DateTime dt = DateTime.Now;//开始接收时间  
             Console.WriteLine("开始时间={0}", dt);
@@ -104,7 +108,7 @@ namespace CoreLaunching
                 for (int i = 0; i < thread; i++)
                 {
                     threadw[i] = false;//每个线程状态的初始值为假  
-                    filenamew[i] = i.ToString() + ".tmp";//每个线程接收文件的临时文件名  
+                    filenamew[i] = FinalSaveFilePath + i.ToString() + ".tmp";//每个线程接收文件的临时文件名  
                     if (i < thread - 1)
                     {
                         filestartw[i] = filethread * i;//每个线程接收文件的起始点  
@@ -116,12 +120,13 @@ namespace CoreLaunching
                         filesizew[i] = filethreade - 1;
                     }
                 }
+
                 //定义线程数组，启动接收线程  
                 Thread[] threadk = new Thread[thread];
-                HttpFile[] httpfile = new HttpFile[thread];
+                HttpFileD[] httpfile = new HttpFileD[thread];
                 for (int j = 0; j < thread; j++)
                 {
-                    httpfile[j] = new HttpFile(j);
+                    httpfile[j] = new HttpFileD(j);
                     threadk[j] = new Thread(new ThreadStart(httpfile[j].receive));
                     threadk[j].Start();
                 }
@@ -175,17 +180,13 @@ namespace CoreLaunching
             DateTime dt = DateTime.Now;
             Console.WriteLine("接受完毕，时间为{0}",dt.ToString());//结束时间  
         }
-    }
 
-    public class HighSpeedDownloader
-    {
-        public void Start(string url,string localFolder,int threadsNum)
+        public void Start(string url, string localFolder, int threadsNum)
         {
-            HttpFile hf = new HttpFile(threadsNum);
-            hf.thread = threadsNum;
-            hf.strurl = url;
-            hf.FinalSaveFilePath=Path.Combine(localFolder,Path.GetFileName(hf.strurl));
-            hf.Start(url, threadsNum);
+            thread = threadsNum;
+            strurl = url;
+            FinalSaveFilePath = Path.Combine(localFolder, Path.GetFileName(url));
+            voidStart(url, threadsNum);
         }
     }
 }

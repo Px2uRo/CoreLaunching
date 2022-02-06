@@ -1,6 +1,7 @@
 ﻿
 namespace CoreLaunching.ObjectTemples
 {
+    #region 本地版本 JSON 管理class
     public class artifact
     {
         public string path;
@@ -24,9 +25,9 @@ namespace CoreLaunching.ObjectTemples
     }
     public class natives
     {
-       public string windows;
-       public string osx;
-       public string linux;
+        public string windows;
+        public string osx;
+        public string linux;
     }
 
     public class libInfo
@@ -35,4 +36,5 @@ namespace CoreLaunching.ObjectTemples
         public natives natives;
         public string name;
     }
+    #endregion
 }

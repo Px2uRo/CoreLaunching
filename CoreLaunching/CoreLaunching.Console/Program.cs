@@ -9,8 +9,9 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
-            var hd = new HighSpeedDownloader(); 
-            hd.Start("https://download.openmpt.org/archive/openmpt/1.30/OpenMPT-1.30.02.00-portable-amd64.zip", @"X:\Test",32);
+            MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
+            multiThreadDownloader.GoGoGo("https://download.openmpt.org/archive/openmpt/1.30/OpenMPT-1.30.02.00-portable-amd64.zip",32, @"I:\Test");
+            //("https://download.openmpt.org/archive/openmpt/1.30/OpenMPT-1.30.02.00-portable-amd64.zip", @"X:\Test",32);
         }
 
         private static void OldTestCommand1()
