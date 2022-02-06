@@ -44,7 +44,7 @@ namespace CoreLaunching
 
         class HttpFile
         {
-            #region 此类局部变量
+            #region 此类变量
             public MultiThreadDownloader multi;
             public int threadindex;//线程代号  
             public string filename;//文件名  
@@ -55,7 +55,7 @@ namespace CoreLaunching
             public byte[] nbytes;//接收缓冲区  
             public int nreadsize;//接收字节数  
             #endregion
-            public HttpFile(MultiThreadDownloader multiarg,int threadsNum)
+            public HttpFile(MultiThreadDownloader multiarg,int threadsNum)//构造函数
             {
                 threadindex= threadsNum;
                 multi = multiarg;
@@ -63,7 +63,7 @@ namespace CoreLaunching
 
             public void receive()//接收线程  
             {
-                filename = multi.tmpFileNamew[threadindex];
+                filename = multi.tmpFileNamew[threadindex];//直接赋值，无需考虑数组问题，下同。
                 strUrl = multi.webUrl;
                 ns = null;
                 nbytes = new byte[512];
@@ -103,15 +103,18 @@ namespace CoreLaunching
         }
         public void GoGoGo(string url, int threadNum, string localFolder)
         {
+            #region 设置一堆参数
             localFolder = Path.Combine(localFolder, Path.GetFileName(url));
-            FinalLocalFolder = localFolder;
-            DateTime dt = DateTime.Now;//定义开始接收时间
-            Console.WriteLine("开始时间={0}", dt);//输出信息
-            webUrl = url;
+            FinalLocalFolder = localFolder;//这个是其他成员会用到的参数，请定义在类下面而不是成员下面。
+            webUrl = url;//同上
             HttpWebRequest request;
             long filesize = 0;
+            #endregion
+
+            DateTime dt = DateTime.Now;
+            Console.WriteLine("开始时间={0}", dt);//打印一行日志
             DirectoryInfo dir = new DirectoryInfo(localFolder + "tmp");
-            dir.Create();
+            dir.Create();//创建临时文件文件夹。
 
             #region 尝试对web进行请求。
             try
@@ -128,7 +131,7 @@ namespace CoreLaunching
 
             #endregion
 
-            // 确认线程数
+            // 确认线程数组的数量，这些都是定义在类下面的。
             thread = threadNum;
             threadw = new bool[thread];
             tmpFileNamew = new string[thread];
@@ -136,39 +139,38 @@ namespace CoreLaunching
             tmpFileSizew = new int[thread];
 
             #region 计算每个线程应该接收文件的大小
-            int filethread = (int)filesize / thread;//平均分配  
-            int filethreade = filethread + (int)filesize % thread;//剩余部分由最后一个线程完成  
+            int Shang = (int)filesize / thread;//商
+            int Yushu = Shang + (int)filesize % thread;//余数
             #region 为数组赋值
             for (int i = 0; i < thread; i++)
             {
-                threadw[i] = false;//每个线程状态的初始值为假  
+                threadw[i] = false;//每个线程状态的初始值为假，方便最后合并时验证线程是否接受完毕
                 tmpFileNamew[i] = Path.Combine(localFolder+"tmp", i.ToString() + ".tmp");//每个线程接收文件的临时文件名  
                 if (i < thread - 1)
                 {
-                    tmpFileSizeStartw[i] = filethread * i;//每个线程接收文件的起始点  
-                    tmpFileSizew[i] = filethread - 1;//每个线程接收文件的长度  
+                    tmpFileSizeStartw[i] = Shang * i;//每个线程接收文件的起始点  
+                    tmpFileSizew[i] = Shang - 1;//每个线程接收文件的长度，减一是因为不把后面起点位置占用。
                 }
                 else
                 {
-                    tmpFileSizeStartw[i] = filethread * i;
-                    tmpFileSizew[i] = filethreade - 1;
+                    tmpFileSizeStartw[i] = Shang * i;
+                    tmpFileSizew[i] = Yushu - 1;
                 }
             }
             #endregion
             #endregion
 
             #region 开始多线程
-            Thread[] threadk = new Thread[thread];
-            HttpFile[] httpfile = new HttpFile[thread];
-            for (int j = 0; j < thread; j++)
+            Thread[] threadk = new Thread[thread];//定义线程数组。
+            HttpFile[] httpfile = new HttpFile[thread];//HttpFile 是一个类，此处定义类数组。
+            for (int j = 0; j < thread; j++)//开始创建线程下载。
             {
                 httpfile[j] = new HttpFile(this,j);
                 threadk[j] = new Thread(new ThreadStart(httpfile[j].receive));
                 threadk[j].Start();
             }
-            //启动合并各线程接收的文件线程  
-            hbfile();
-            dir.Delete(true);
+            hbfile();//合并线程接收的文件  
+            dir.Delete(true);//强制删除临时文件夹
             #endregion
 
         }
