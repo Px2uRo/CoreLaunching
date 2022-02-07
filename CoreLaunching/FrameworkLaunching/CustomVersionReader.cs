@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CoreLaunching
+namespace FrameworkLaunching
 {
     /// <summary>
     /// 版本信息管理器。

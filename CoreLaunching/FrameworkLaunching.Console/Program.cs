@@ -1,18 +1,15 @@
 ﻿using System;
 using Cons = System.Console;
-using cl = CoreLaunching;
+using cl = FrameworkLaunching;
 using System.IO;
 
-namespace CoreLaunching.Console
+namespace FrameworkLaunching.Console
 {
     class Program
     {
         static void Main(string[] args)
         {
-            MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
-            multiThreadDownloader.GoGoGo("https://download.openmpt.org/archive/openmpt/1.30/OpenMPT-1.30.02.00-portable-amd64.zip",32, @"I:\Test");
-            //("https://download.openmpt.org/archive/openmpt/1.30/OpenMPT-1.30.02.00-portable-amd64.zip", @"X:\Test",32);
-            Cons.Read();
+            OldTestCommand1();
         }
 
         private static void OldTestCommand1()

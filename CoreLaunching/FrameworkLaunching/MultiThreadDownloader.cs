@@ -8,7 +8,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 
-namespace CoreLaunching
+namespace FrameworkLaunching
 {
     public class MultiThreadDownloader
     {

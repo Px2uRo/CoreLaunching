@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace CoreLaunching
+namespace FrameworkLaunching
 {
     /// <summary>
     /// 这是下载Minecraft游戏文件使用的一个类。

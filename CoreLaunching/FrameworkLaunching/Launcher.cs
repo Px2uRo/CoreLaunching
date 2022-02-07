@@ -10,7 +10,7 @@ using CoreLaunching.ObjectTemples;
 using System.IO.Compression;
 using System.Diagnostics;
 
-namespace CoreLaunching
+namespace FrameworkLaunching
 {
     public class Launcher
     {
@@ -108,72 +108,84 @@ namespace CoreLaunching
             List<libInfo> libInfos = JsonConvert.DeserializeObject<List<libInfo>>(libraryStr);
             List<libInfo> libInfoFormatted = JsonConvert.DeserializeObject<List<libInfo>>(libraryStrFormatted);
             loader.Close();
-            //#region ExportDlls
-            //for (int i = 0; i < libInfoFormatted.Count; i++)
-            //{
-            //    if(libInfoFormatted[i].downloads.artifact == null)
-            //    {
-            //        switch (libInfoFormatted[i].downloads.classifiers.natives_windows != null, System.Environment.Is64BitOperatingSystem == true)
-            //        {
-            //            case (true, true):
-            //                var ReFotmattedLibPath1 = classLibPath+@"\" + libInfoFormatted[i].downloads.classifiers.natives_windows.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
-            //                try
-            //                {
-            //                    ZipFile.ExtractToDirectory(ReFotmattedLibPath1, nativeLibExportPath);
-            //                }
-            //                catch(Exception ex)
-            //                {
-            //                    Console.WriteLine(ex);
-            //                }
-            //                break;
-            //            case (true, false):
-            //                var ReFotmattedLibPath2 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
-            //                try
-            //                {
-            //                    ZipFile.ExtractToDirectory(ReFotmattedLibPath2, nativeLibExportPath);
-            //                }
-            //                catch (Exception ex)
-            //                {
-            //                    Console.WriteLine(ex);
-            //                }
-            //                break;
-            //                case(false, true):
-            //                var ReFotmattedLibPath3 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows_64.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
-            //                try
-            //                {
-            //                    ZipFile.ExtractToDirectory(ReFotmattedLibPath3, nativeLibExportPath);
-            //                }
-            //                catch (Exception ex)
-            //                {
-            //                    Console.WriteLine(ex);
-            //                    if (new FileInfo(ReFotmattedLibPath3.Replace("64", "32")).Exists == true)
-            //                    {
-            //                        try
-            //                        {
-            //                            ZipFile.ExtractToDirectory(ReFotmattedLibPath3.Replace("64", "32"), nativeLibExportPath);
-            //                        }
-            //                        catch
-            //                        {
-            //                            Console.WriteLine(ex);   
-            //                        }
-            //                    }
-            //                }
-            //                break;
-            //            case (false, false):
-            //                var ReFotmattedLibPath4 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows_86.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
-            //                try
-            //                {
-            //                    ZipFile.ExtractToDirectory(ReFotmattedLibPath4, nativeLibExportPath);
-            //                }
-            //                catch (Exception ex)
-            //                {
-            //                    Console.WriteLine(ex);
-            //                }
-            //                break;
-            //        }
-            //    }
-            //}
-            //#endregion
+            #region ExportDlls
+            for (int i = 0; i < libInfoFormatted.Count; i++)
+            {
+                if (libInfoFormatted[i].downloads.artifact == null)
+                {
+                    var key1 = libInfoFormatted[i].downloads.classifiers.natives_windows;
+                    var key2 = System.Environment.Is64BitOperatingSystem;
+                    if(key1 != null && key2 == true)
+                    {
+                        var ReFotmattedLibPath1 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
+                        try
+                        {
+                            ZipFile.ExtractToDirectory(ReFotmattedLibPath1, nativeLibExportPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                        }
+                    }
+                    else
+                    {
+                        if(key1!=null&&key2!=true)
+                        {
+                            var ReFotmattedLibPath2 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
+                            try
+                            {
+                                ZipFile.ExtractToDirectory(ReFotmattedLibPath2, nativeLibExportPath);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex);
+                            }
+                        }
+                        else
+                        {
+                            if (key1 == null && key2 == true)
+                            {
+                                var ReFotmattedLibPath3 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows_64.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
+                                try
+                                {
+                                    ZipFile.ExtractToDirectory(ReFotmattedLibPath3, nativeLibExportPath);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine(ex);
+                                    if (new FileInfo(ReFotmattedLibPath3.Replace("64", "32")).Exists == true)
+                                    {
+                                        try
+                                        {
+                                            ZipFile.ExtractToDirectory(ReFotmattedLibPath3.Replace("64", "32"), nativeLibExportPath);
+                                        }
+                                        catch
+                                        {
+                                            Console.WriteLine(ex);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if(key1 == null && key2 != true)
+                                {
+                                    var ReFotmattedLibPath4 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows_86.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
+                                    try
+                                    {
+                                        ZipFile.ExtractToDirectory(ReFotmattedLibPath4, nativeLibExportPath);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine(ex);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            #endregion
 
             #region SetCpArg
             for (int i = 0; i <libInfos.Count; i++)
