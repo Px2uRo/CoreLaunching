@@ -9,26 +9,43 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
-            DirectoryInfo dir = new DirectoryInfo(@"..\.minecraft");
-            dir.Create();
-
-            string front = @"..\.minecraft\";
-            string verDir = @"version\";
-
-            cl.DirectorySystem dirS = new DirectorySystem();
-            dirS.DirSys(front+verDir);
-
-            cl.VersionMgr mgr = new VersionMgr();
-            try
-            {
-                mgr.LoadJson(front + verDir + @"Test.json");
-
-            }
-            catch
-            {
-
-            }
+            MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
+            multiThreadDownloader.GoGoGo("https://download.openmpt.org/archive/openmpt/1.30/OpenMPT-1.30.02.00-portable-amd64.zip",32, @"I:\Test");
+            //("https://download.openmpt.org/archive/openmpt/1.30/OpenMPT-1.30.02.00-portable-amd64.zip", @"X:\Test",32);
             Cons.Read();
         }
+
+        private static void OldTestCommand1()
+        {
+            cl.Launcher launcher = new cl.Launcher();
+            cl.Launcher.JavaPath = @"""C:\Program Files\Java\jre1.8.0_291\bin\javaw.exe""";
+            launcher.SetMemory(256, 1536);
+            launcher.SetLauncherInfo("CoreLaunching", "0.1");
+            cl.Launcher.classLibPath = @"C:\Users\Lenovo\AppData\Roaming\.minecraft\libraries";
+            cl.Launcher.clinetJarPath = @"C:\Users\Lenovo\AppData\Roaming\.minecraft\versions\1.7.10\1.7.10.jar";
+            cl.Launcher.nativeLibExportPath = @"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random";
+            cl.Launcher.log4jConfigurationFilePath = @"C:\Users\Lenovo\AppData\Roaming\.minecraft\assets\log_configs\client-1.7.xml";
+            cl.Launcher.HeapDumpPath = "MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump";
+            cl.Launcher.OtherArguments = "-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M";
+            cl.Launcher.assetsDir = @"C:\Users\Lenovo\AppData\Roaming\.minecraft\assets";
+            cl.Launcher.log4jConfigurationFilePath = @"C:\Users\Lenovo\AppData\Roaming\.minecraft\assets\log_configs\client-1.7.xml";
+
+            cl.Launcher.PlayerName = "Xia";
+            cl.Launcher.GameVersion = "1.7.10";
+            cl.Launcher.GameDir = @"C:\Users\Lenovo\AppData\Roaming\.minecraft";
+            cl.Launcher.assetIndex = "1.7.10";
+            cl.Launcher.uuid = "0000000000000003A98F501BCC514FFA";
+            cl.Launcher.accessToken = @"0000000000000003A98F501BCC514FFA";
+            cl.Launcher.userProperties = "{}";
+            cl.Launcher.userType = "Legacy";
+            
+            cl.Launcher.TargetJSON = @"C:\Users\Lenovo\AppData\Roaming\.minecraft\versions\1.7.10\1.7.10.json";
+
+            launcher.Launch();
+
+        }
+    
+    
     }
 }
+ 
