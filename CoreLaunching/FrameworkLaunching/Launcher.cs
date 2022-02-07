@@ -239,6 +239,7 @@ namespace FrameworkLaunching
             log4jConfigurationFilePath = @" -Dlog4j.configurationFile=" + log4jConfigurationFilePath;
             OtherArguments = " "+OtherArguments;
             HeapDumpPath = @" -XX:HeapDumpPath="+HeapDumpPath;
+            JavaPath = @"""" + JavaPath + @""""; 
             var FinalCommand = JavaPath + DebugOSNameVersion + HeapDumpPath + nativeLibExportPath + LauncherInfo + clinetJarPath + cpCommandLine + Memory + OtherArguments + log4jConfigurationFilePath + mainClass + minecraftArguments;
             Process p = new Process();
             p.StartInfo.FileName = "cmd.exe";

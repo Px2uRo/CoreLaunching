@@ -9,9 +9,15 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
-            MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
-            multiThreadDownloader.GoGoGo("https://download.openmpt.org/archive/openmpt/1.30/OpenMPT-1.30.02.00-portable-amd64.zip",32, @"I:\Test");
-            //("https://download.openmpt.org/archive/openmpt/1.30/OpenMPT-1.30.02.00-portable-amd64.zip", @"X:\Test",32);
+            VersionManifestReader versionManifestReader = new VersionManifestReader();
+            versionManifestReader.Load(@"I:\Test\VM.json");
+            Cons.WriteLine("目前最新发行版,{0}", versionManifestReader.latestInfo.release.ToString());
+            Cons.WriteLine("目前最新测试版,{0}", versionManifestReader.latestInfo.snapshot.ToString());
+            Cons.WriteLine("所有已知版本：");
+            for (int i = 0; i < versionManifestReader.verInfo.Count; i++)
+            {
+                Cons.WriteLine(versionManifestReader.verInfo[i].id.ToString());
+            }
         }
 
         private static void OldTestCommand1()
