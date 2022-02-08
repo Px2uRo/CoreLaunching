@@ -2,6 +2,10 @@
 using Cons = System.Console;
 using cl = CoreLaunching;
 using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using CoreLaunching.ObjectTemples;
+using System.Collections.Generic;
 
 namespace CoreLaunching.Console
 {
@@ -9,18 +13,44 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
-            VersionManifestReader versionManifestReader = new VersionManifestReader();
-            versionManifestReader.Load(@"I:\Test\VM.json");
-            Cons.WriteLine("目前最新发行版,{0}", versionManifestReader.latestInfo.release.ToString());
-            Cons.WriteLine("目前最新测试版,{0}", versionManifestReader.latestInfo.snapshot.ToString());
-            Cons.WriteLine("所有已知版本：");
-            for (int i = 0; i < versionManifestReader.verInfo.Count; i++)
+            StreamReader loader = File.OpenText(@"I:\Test\1.17.json");
+            JsonReader reader = new JsonTextReader(loader);
+            JObject Object = (JObject)JToken.ReadFrom(reader);
+            JToken token = Object["arguments"];
+            JToken token2 = token["game"];
+            JToken jvmToken = token["jvm"];
+            object[] gamesarray = JsonConvert.DeserializeObject<object[]>(token2.ToString());
+            List<game> games = new List<game>();
+            List<String> minecraftArguments = new List<String>{};
+            for (int i = 0; i < gamesarray.Length; i++)
             {
-                Cons.WriteLine(versionManifestReader.verInfo[i].id.ToString());
+                try
+                {
+                    games.Add(JsonConvert.DeserializeObject<game>(gamesarray[i].ToString()));
+                }
+                catch
+                {
+                minecraftArguments.Add(gamesarray[i].ToString());
+                }
+            }
+            for(int i = 0;i < games.Count; i++)
+            {
+                try
+                {
+                    List<String> arr = JsonConvert.DeserializeObject<List<String>>(games[i].value.ToString());
+                    for (int j = 0; j < arr.Count; j++)
+                    {
+                        minecraftArguments.Add(arr[j]);
+                    }
+                }
+                catch
+                {
+                    minecraftArguments.Add(games[i].value.ToString());
+                }
             }
         }
 
-        private static void OldTestCommand1()
+        /*private static void OldTestCommand1()
         {
             cl.Launcher launcher = new cl.Launcher();
             cl.Launcher.JavaPath = @"""C:\Program Files\Java\jre1.8.0_291\bin\javaw.exe""";
@@ -48,9 +78,21 @@ namespace CoreLaunching.Console
 
             launcher.Launch();
 
-        }
-    
-    
+        }*/
+
+        /*private static void OldTestCommand2()
+        {
+            VersionManifestReader versionManifestReader = new VersionManifestReader();
+            versionManifestReader.Load(@"I:\Test\VM.json");
+            Cons.WriteLine("目前最新发行版,{0}", versionManifestReader.latestInfo.release.ToString());
+            Cons.WriteLine("目前最新测试版,{0}", versionManifestReader.latestInfo.snapshot.ToString());
+            Cons.WriteLine("所有已知版本：");
+            for (int i = 0; i < versionManifestReader.verInfo.Count; i++)
+            {
+                Cons.WriteLine(versionManifestReader.verInfo[i].id.ToString());
+            }
+
+        }*/
     }
 }
  

@@ -30,6 +30,15 @@ namespace CoreLaunching.ObjectTemples
         public string linux;
     }
 
+    public class extract
+    {
+        public exclude exclude;
+    }
+
+    public class exclude
+    {
+
+    }
     public class libInfo
     {
         public downloads downloads;
