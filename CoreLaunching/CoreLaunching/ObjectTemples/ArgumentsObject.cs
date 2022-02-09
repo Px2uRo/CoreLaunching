@@ -12,10 +12,10 @@ namespace CoreLaunching.ObjectTemples
         public object value;
     }
 
-    public class jvmArguments
+    public class jvm
     {
         public List<rules> rules;
-        public string[] value;
+        public object value;
     }
 
     public class rules
@@ -33,5 +33,7 @@ namespace CoreLaunching.ObjectTemples
     public class os
     {
         public string name;
+        public string arch;
+        public string version;
     }
 }

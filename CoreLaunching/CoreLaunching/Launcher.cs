@@ -184,6 +184,81 @@ namespace CoreLaunching
             }
             #endregion
         }
+
+        void JieXiNewVersion()
+        {
+            StreamReader loader = File.OpenText(@"I:\Test\1.17.json");
+            JsonReader reader = new JsonTextReader(loader);
+            JObject Object = (JObject)JToken.ReadFrom(reader);
+            JToken token = Object["arguments"];
+            JToken token2 = token["game"];
+            JToken jvmToken = token["jvm"];
+            object[] gamesarray = JsonConvert.DeserializeObject<object[]>(token2.ToString());
+            object[] jvmarray = JsonConvert.DeserializeObject<object[]>(jvmToken.ToString());
+            List<game> games = new List<game>();
+            List<jvm> jvms = new List<jvm>();
+            List<String> minecraftArguments = new List<String> { };
+            for (int i = 0; i < gamesarray.Length; i++)
+            {
+                try
+                {
+                    games.Add(JsonConvert.DeserializeObject<game>(gamesarray[i].ToString()));
+                }
+                catch
+                {
+                    minecraftArguments.Add(gamesarray[i].ToString());
+                }
+            }
+            for (int i = 0; i < games.Count; i++)
+            {
+                if ("allow" == games[i].rules[0].action)
+                {
+                    if (true == games[i].rules[0].features.is_demo_user || true == games[i].rules[0].features.has_custom_resolution)
+                    {
+                        try
+                        {
+                            List<String> arr = JsonConvert.DeserializeObject<List<String>>(games[i].value.ToString());
+                            minecraftArguments.Add(arr[i]);
+                        }
+                        catch
+                        {
+                            minecraftArguments.Add(games[i].value.ToString());
+                        }
+                        Console.WriteLine("true");
+                    }
+                }
+            }
+            for (int i = 0; i < jvmarray.Length; i++)
+            {
+                try
+                {
+                    jvms.Add(JsonConvert.DeserializeObject<jvm>(jvmarray[i].ToString()));
+                }
+                catch
+                {
+                    minecraftArguments.Add(jvmarray[i].ToString());
+                }
+            }
+            for (int i = 0; i < jvms.Count; i++)
+            {
+                try
+                {
+                    List<String> arr = JsonConvert.DeserializeObject<List<String>>(jvms[i].value.ToString());
+                    for (int j = 0; j < arr.Count; j++)
+                    {
+                        minecraftArguments.Add(arr[j]);
+                    }
+                }
+                catch
+                {
+                    minecraftArguments.Add(jvms[i].value.ToString());
+                }
+            }
+            for (int i = 0; i < minecraftArguments.Count; i++)
+            {
+                Console.Write(" " + minecraftArguments[i].ToString());
+            }
+        }
         #endregion
         public void Launch()
         {

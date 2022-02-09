@@ -71,6 +71,6 @@ namespace CoreLaunching.ObjectTemples
     public class arguments
     {
         public List<game> game;
-        public List<jvmArguments> jvm;
+        public List<jvm> jvm;
     }
 }

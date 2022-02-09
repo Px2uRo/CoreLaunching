@@ -13,41 +13,7 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
-            StreamReader loader = File.OpenText(@"I:\Test\1.17.json");
-            JsonReader reader = new JsonTextReader(loader);
-            JObject Object = (JObject)JToken.ReadFrom(reader);
-            JToken token = Object["arguments"];
-            JToken token2 = token["game"];
-            JToken jvmToken = token["jvm"];
-            object[] gamesarray = JsonConvert.DeserializeObject<object[]>(token2.ToString());
-            List<game> games = new List<game>();
-            List<String> minecraftArguments = new List<String>{};
-            for (int i = 0; i < gamesarray.Length; i++)
-            {
-                try
-                {
-                    games.Add(JsonConvert.DeserializeObject<game>(gamesarray[i].ToString()));
-                }
-                catch
-                {
-                minecraftArguments.Add(gamesarray[i].ToString());
-                }
-            }
-            for(int i = 0;i < games.Count; i++)
-            {
-                try
-                {
-                    List<String> arr = JsonConvert.DeserializeObject<List<String>>(games[i].value.ToString());
-                    for (int j = 0; j < arr.Count; j++)
-                    {
-                        minecraftArguments.Add(arr[j]);
-                    }
-                }
-                catch
-                {
-                    minecraftArguments.Add(games[i].value.ToString());
-                }
-            }
+
         }
 
         /*private static void OldTestCommand1()
