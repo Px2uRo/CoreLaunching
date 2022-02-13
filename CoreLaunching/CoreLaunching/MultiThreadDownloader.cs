@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CoreLaunching.ObjectTemples;
+using CoreLaunching.ObjectTemplates;
 using System.IO;
 using System.Net;
 using System.Threading;

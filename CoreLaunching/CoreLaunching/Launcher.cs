@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using CoreLaunching.ObjectTemples;
+using CoreLaunching;
 using System.IO.Compression;
 using System.Diagnostics;
 
@@ -14,36 +14,66 @@ namespace CoreLaunching
 {
     public class Launcher
     {
-        public static string JavaPath { get; set; }//指定 Java 路径
-        public static string OtherArguments { get; set; }//指定额外参数
+        CoreLaunching.ObjectTemplates.Root root;
+        public string FinnalCommand;
+        #region JVM&DebugArguments
+        public static string JavaPath = @"""${JavaPath}""";//指定 Java 路径
+        public static string OtherArguments = " ${OtherArguments}";//指定额外参数
         public static string classLibPath { get; set; }
         public static string clinetJarPath { get; set; }
-        public static string HeapDumpPath {get; set; }
-        public static string log4jConfigurationFilePath { get; set; }
-        public static string nativeLibExportPath { get; set; }
-
-        static string Memory;
-        /// <summary>
-        /// 分配内存
-        /// </summary>
-        /// <param name="MaxMemory">最大内存</param>
-        /// <param name="MinMemory">最小内存</param>
-        public void SetMemory(int MinMemory, int MaxMemory)
-        {
-            Memory =" " + "-Xmx" + MaxMemory.ToString() + "m" + " -Xmn" + MinMemory.ToString() + "m";
-        }
+        public static string HeapDumpPath=" ${HeapDumpPath}";
+        public static string loggingArgs = " ${logging}";
+        public static string nativeLibExportPath = " -Djava.library.path=${natives_directory}";
+        public static string Memory { get; set; }
         static string LauncherInfo;
-        /// <summary>
-        /// 设置启动器信息
-        /// </summary>
-        /// <param name="Name">OS名称</param>
-        /// <param name="Version">OS版本</param>
-        public void SetLauncherInfo(string Name,string Version)
-        {
-            LauncherInfo = " "+ "-Dminecraft.launcher.brand=" + Name +" " + "-Dminecraft.launcher.version="+Version;
-        }
-
+        static string DebugOSNameVersion;
+        #endregion
+        #region ELList
+        List<string> ELList = new List<string>
+            {
+            "${OtherArguments}",
+            "${natives_directory}",
+            "${HeapDumpPath}",
+            "${JavaPath}",
+            "${auth_player_name}",
+            "${version_name}",
+            "${game_directory}",
+            "${assets_root}",
+            "${assets_index_name}",
+            "${auth_uuid}",
+            "${auth_access_token}",
+            "${user_properties}",
+            "${user_type}",
+            "${cp}",
+            "${mainClass}",
+            "${minecraftArgumets}",
+            "${logging}"
+            };
+        List<string> ELConv = new List<string>
+            {
+            OtherArguments,
+            nativeLibExportPath,
+            HeapDumpPath,
+            JavaPath,
+            PlayerName,
+            GameVersion,
+            GameDir,
+            assetsDir,
+            assetIndex,
+            uuid,
+            accessToken,
+            userProperties,
+            userType,
+            cpCommandLine,
+            mainClass,
+            minecraftArguments,
+            loggingArgs
+            };
+        #endregion
         #region MCArgs
+        static string minecraftArguments = "${minecraftArgumets}";
+        public static string mainClass=" ${mainClass}";
+        public static string cpCommandLine = @" -cp ${cp}";
         public static string PlayerName { get; set; }
         public static string GameVersion { get; set; }
         public static string GameDir { get; set; }
@@ -54,15 +84,33 @@ namespace CoreLaunching
         public static string userProperties { get; set; }
         public static string userType { get; set; }
         public static string TargetJSON { get; set; }
-        #endregion
 
-        static string DebugOSNameVersion;
-        void SetOSNameVersion(string Name,string Version)
+        #endregion
+        #region ctor
+        /// <summary>
+        /// 核心
+        /// </summary>
+        /// <param name="MaxMemory">最大内存</param>
+        /// <param name="MinMemory">最小内存</param>
+        /// <param name="Name">启动器名称</param>
+        /// <param name="Version">启动器版本</param>
+        public Launcher(int MinMemory, int MaxMemory, string Name, string Version,string TargetJson,string CpPath)
+        {
+            AutoSystemVersion();
+            Memory = " -Xmx" + MaxMemory.ToString() + "m -Xmn" + MinMemory.ToString() + "m";
+            LauncherInfo = " -Dminecraft.launcher.brand=" + Name + " -Dminecraft.launcher.version=" + Version;
+            FinnalCommand = JavaPath + OtherArguments + HeapDumpPath + DebugOSNameVersion + nativeLibExportPath + LauncherInfo + cpCommandLine + Memory + loggingArgs + mainClass + minecraftArguments;
+            root = JsonConvert.DeserializeObject<CoreLaunching.ObjectTemplates.Root>(LoadJson(TargetJson).ToString());
+            classLibPath = CpPath;
+            nativeLibExportPath = "";
+        }
+
+        #endregion
+        #region 自动获取系统版本并传参
+        void SetOSNameVersion(string Name, string Version)
         {
             DebugOSNameVersion = " " + @"""-Dos.name=" + Name + @"""" + " " + "-Dos.version=" + Version;
         }
-
-        #region 自动获取系统版本并传参
         /// <summary>
         /// 自动获取版本并且传参数
         /// </summary>
@@ -85,237 +133,133 @@ namespace CoreLaunching
             }
         }
         #endregion
-
-        string minecraftArguments;
-        string mainClass;
-        string cpCommandLine = @" -cp ";
-
         #region 解析 JSON
         /// <summary>
-        /// 自动解析 JSON 并处理 -cp 参数，并且解包。
+        /// 解析JSON，并且把东西传到变量里面。
         /// </summary>
-        void JieXiJSON()
+        public JObject LoadJson(string Target)
         {
-            StreamReader loader = File.OpenText(TargetJSON);
+            StreamReader loader = File.OpenText(Target);
             JsonTextReader reader = new JsonTextReader(loader);//NewtonJson读取文件。
-            JObject jsonObject = (JObject)JToken.ReadFrom(reader);//强制转换 一个抽象的 JSON 令牌 到一个 JSON 对象。
-            mainClass = " " + jsonObject["mainClass"]; //读取 JSON 里面的 mainClass 项目。
-            minecraftArguments = " " + jsonObject["minecraftArguments"]; //读取 JSON 里面的 minecraftArguments 项目。
-            JToken library = jsonObject["libraries"];
-            var libraryStr = library.ToString();
-            var libraryStrFormatted = libraryStr.Replace("_", "__");
-            libraryStrFormatted = libraryStrFormatted.Replace("-", "_");
-            List<libInfo> libInfos = JsonConvert.DeserializeObject<List<libInfo>>(libraryStr);
-            List<libInfo> libInfoFormatted = JsonConvert.DeserializeObject<List<libInfo>>(libraryStrFormatted);
-            loader.Close();
-            #region ExportDlls
-            for (int i = 0; i < libInfoFormatted.Count; i++)
-            {
-                if(libInfoFormatted[i].downloads.artifact == null)
-                {
-                    switch (libInfoFormatted[i].downloads.classifiers.natives_windows != null, System.Environment.Is64BitOperatingSystem == true)
-                    {
-                        case (true, true):
-                            var ReFotmattedLibPath1 = classLibPath+@"\" + libInfoFormatted[i].downloads.classifiers.natives_windows.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
-                            try
-                            {
-                                ZipFile.ExtractToDirectory(ReFotmattedLibPath1, nativeLibExportPath);
-                            }
-                            catch(Exception ex)
-                            {
-                                Console.WriteLine(ex);
-                            }
-                            break;
-                        case (true, false):
-                            var ReFotmattedLibPath2 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
-                            try
-                            {
-                                ZipFile.ExtractToDirectory(ReFotmattedLibPath2, nativeLibExportPath);
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine(ex);
-                            }
-                            break;
-                            case(false, true):
-                            var ReFotmattedLibPath3 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows_64.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
-                            try
-                            {
-                                ZipFile.ExtractToDirectory(ReFotmattedLibPath3, nativeLibExportPath);
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine(ex);
-                                if (new FileInfo(ReFotmattedLibPath3.Replace("64", "32")).Exists == true)
-                                {
-                                    try
-                                    {
-                                        ZipFile.ExtractToDirectory(ReFotmattedLibPath3.Replace("64", "32"), nativeLibExportPath);
-                                    }
-                                    catch
-                                    {
-                                        Console.WriteLine(ex);   
-                                    }
-                                }
-                            }
-                            break;
-                        case (false, false):
-                            var ReFotmattedLibPath4 = classLibPath + @"\" + libInfoFormatted[i].downloads.classifiers.natives_windows_86.path.ToString().Replace(@"/", @"\").Replace(@"_", @"-").Replace(@"__", @"_");
-                            try
-                            {
-                                ZipFile.ExtractToDirectory(ReFotmattedLibPath4, nativeLibExportPath);
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine(ex);
-                            }
-                            break;
-                    }
-                }
-            }
-            #endregion
-            #region SetCpArg
-            for (int i = 0; i <libInfos.Count; i++)
-            {
-                if (libInfoFormatted[i].downloads.artifact != null)
-                {
-                    cpCommandLine = cpCommandLine + classLibPath + @"\" + libInfos[i].downloads.artifact.path.Replace(@"/", @"\") + ";";
-                }
-            }
-            #endregion
+            var jsonObject = (JObject)JToken.ReadFrom(reader);//强制转换 一个抽象的 JSON 令牌 到一个 JSON 对象。
+            return jsonObject;
         }
-
-        void JieXiNewVersion()
+        #endregion
+        public void Launch(string javaPath,string nativePath,string allow,bool is_demo_user,bool has_custom_resolution,int width,int height)
         {
-            StreamReader loader = File.OpenText(@"I:\Test\1.17.json");
-            JsonReader reader = new JsonTextReader(loader);
-            JObject Object = (JObject)JToken.ReadFrom(reader);
-            JToken token = Object["arguments"];
-            JToken token2 = token["game"];
-            JToken jvmToken = token["jvm"];
-            object[] gamesarray = JsonConvert.DeserializeObject<object[]>(token2.ToString());
-            object[] jvmarray = JsonConvert.DeserializeObject<object[]>(jvmToken.ToString());
-            List<game> games = new List<game>();
-            List<jvm> jvms = new List<jvm>();
-            List<String> minecraftArguments = new List<String> { };
-            for (int i = 0; i < gamesarray.Length; i++)
+            JavaPath = javaPath;
+            minecraftArguments = "";
+            cpCommandLine = "";
+            if (root.minecraftArguments == null&&root.arguments!=null)
             {
-                try
-                {
-                    games.Add(JsonConvert.DeserializeObject<game>(gamesarray[i].ToString()));
-                }
-                catch
-                {
-                    minecraftArguments.Add(gamesarray[i].ToString());
-                }
+                ParseMinecraftArguments(allow, is_demo_user, has_custom_resolution, width, height);
+                cpCommandLine = AutoCpCommandLine(root);
+                ExportNative(root,0,nativePath);
             }
-            for (int i = 0; i < games.Count; i++)
+            else if (root.arguments != null && root.minecraftArguments == null)
             {
-                if ("allow" == games[i].rules[0].action)
+                
+            }
+            else if (root.arguments == null && root.minecraftArguments == null)
+            {
+                Console.WriteLine("不支持的版本");
+            }
+            for (int i = 0; i < ELList.Count; i++)
+            {
+                minecraftArguments.Replace(ELList[i],ELConv[i]);
+            }
+        }
+        #region 拼接参数以及解压Natives
+        /// <summary>
+        /// 拼接游戏参数用的
+        /// </summary>
+        /// <param name="allow">是否 allow</param>
+        /// <param name="is_demo_user">是否非正版</param>
+        /// <param name="has_custom_resolution">是否有自定义分辨率</param>
+        /// <param name="width">宽多少</param>
+        /// <param name="height">高多少</param>
+        void ParseMinecraftArguments(string allow,bool is_demo_user,bool has_custom_resolution,int width,int height)
+        {
+            for (int i = 0; i < root.arguments.game.Array.Count; i++)
+            {
+                minecraftArguments = minecraftArguments + " " + root.arguments.game.Array[i].ToString();
+            }
+            for (int i = 0; i < root.arguments.game.RuleValuePairs.Count; i++)
+            {
+                if (allow == root.arguments.game.RuleValuePairs[i].rules.ActionFeaturesOSGroup.action)
                 {
-                    if (true == games[i].rules[0].features.is_demo_user || true == games[i].rules[0].features.has_custom_resolution)
+                    if (is_demo_user == root.arguments.game.RuleValuePairs[i].rules.ActionFeaturesOSGroup.features.is_demo_user && true == root.arguments.game.RuleValuePairs[i].rules.ActionFeaturesOSGroup.features.is_demo_user)
                     {
-                        try
+                        for (int j = 0; j < root.arguments.game.RuleValuePairs[i].value.Array.Count; j++)
                         {
-                            List<String> arr = JsonConvert.DeserializeObject<List<String>>(games[i].value.ToString());
-                            minecraftArguments.Add(arr[i]);
+                            minecraftArguments = minecraftArguments + " " + root.arguments.game.RuleValuePairs[i].value.Array[j].ToString();
                         }
-                        catch
+                    }
+                    else if (has_custom_resolution == root.arguments.game.RuleValuePairs[i].rules.ActionFeaturesOSGroup.features.has_custom_resolution)
+                    {
+                        for (int j = 0; j < root.arguments.game.RuleValuePairs[i].value.Array.Count; j++)
                         {
-                            minecraftArguments.Add(games[i].value.ToString());
+                            minecraftArguments = minecraftArguments + " " + root.arguments.game.RuleValuePairs[i].value.Array[j].ToString();
                         }
-                        Console.WriteLine("true");
                     }
                 }
             }
-            for (int i = 0; i < jvmarray.Length; i++)
+        }
+        
+        string AutoCpCommandLine(ObjectTemplates.Root root)
+        {
+            string cpCommandLine = "";
+            for (int i = 0; i < root.libraries.Array.Count; i++)
             {
-                try
-                {
-                    jvms.Add(JsonConvert.DeserializeObject<jvm>(jvmarray[i].ToString()));
-                }
-                catch
-                {
-                    minecraftArguments.Add(jvmarray[i].ToString());
-                }
+                cpCommandLine = cpCommandLine + Path.Combine(classLibPath, root.libraries.Array[i].downloads.artifact.path.ToString().Replace("/","\\")) + ";";
             }
-            for (int i = 0; i < jvms.Count; i++)
+            return cpCommandLine;
+        }
+        public enum MyPlatforms
+        {
+            Windows,Osx,Linux
+        }
+        void ExportNative(ObjectTemplates.Root root,MyPlatforms platform,string nativePath)
+        {
+            nativeLibExportPath = nativePath;
+            List<string> path = new List<string>();
+            List<string> urls = new List<string>();
+            if(platform == MyPlatforms.Windows)
             {
-                try
+                for (int i = 0; i < root.libraries.Array.Count; i++)
                 {
-                    List<String> arr = JsonConvert.DeserializeObject<List<String>>(jvms[i].value.ToString());
-                    for (int j = 0; j < arr.Count; j++)
+                    if (root.libraries.Array[i].downloads.classifiers != null)
                     {
-                        minecraftArguments.Add(arr[j]);
+                        if (root.libraries.Array[i].downloads.classifiers.natives_windows!=null)
+                        {
+                            path.Add(Path.Combine(classLibPath, root.libraries.Array[i].downloads.classifiers.natives_windows.path.ToString().Replace("/", "\\")));
+                            urls.Add(root.libraries.Array[i].downloads.classifiers.natives_windows.url);
+                        }
                     }
                 }
-                catch
+                System.Threading.Thread[] thr = new System.Threading.Thread[path.Count];
+                for (int i = 0; i < path.Count; i++)
                 {
-                    minecraftArguments.Add(jvms[i].value.ToString());
+                    if (File.Exists(path[i]) == true)
+                    {
+                        ZipFile.ExtractToDirectory(path[i], nativeLibExportPath,true);
+                    }
+                    else if (File.Exists(path[i]) != true)
+                    {
+                        MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
+                        multiThreadDownloader.GoGoGo(urls[i], 64, path[i].Replace(Path.GetFileName(path[i]), ""));
+                    }
                 }
             }
-            for (int i = 0; i < minecraftArguments.Count; i++)
+            else if(platform == MyPlatforms.Osx)
             {
-                Console.Write(" " + minecraftArguments[i].ToString());
+
+            }
+            else if (platform == MyPlatforms.Linux)
+            {
+
             }
         }
         #endregion
-        public void Launch()
-        {
-            AutoSystemVersion();
-            JieXiJSON();
-            List<string> ELList = new List<string>
-            {
-            "${auth_player_name}",
-            "${version_name}",
-            "${game_directory}",
-            "${assets_root}",
-            "${assets_index_name}",
-            "${auth_uuid}",
-            "${auth_access_token}",
-            "${user_properties}",
-            "${user_type}",
-            };
-            List<string> ELConv = new List<string>
-            {
-            PlayerName,
-            GameVersion,
-            GameDir,
-            assetsDir,
-            assetIndex,
-            uuid,
-            accessToken,
-            userProperties,
-            userType,
-            };
-            for(int i = 0;i< ELList.Count; i++)
-            {
-                minecraftArguments = minecraftArguments.Replace(ELList[i],ELConv[i]);
-            }
-            ELList.Clear();
-            ELConv.Clear();
-
-            cpCommandLine = cpCommandLine + clinetJarPath;
-            clinetJarPath = @" -Dminecraft.client.jar=" + clinetJarPath;
-            nativeLibExportPath = @" -Djava.library.path=" + nativeLibExportPath;
-            log4jConfigurationFilePath = @" -Dlog4j.configurationFile=" + log4jConfigurationFilePath;
-            OtherArguments = " "+OtherArguments;
-            HeapDumpPath = @" -XX:HeapDumpPath="+HeapDumpPath;
-            var FinalCommand = JavaPath + DebugOSNameVersion + HeapDumpPath + nativeLibExportPath + LauncherInfo + clinetJarPath + cpCommandLine + Memory + OtherArguments + log4jConfigurationFilePath + mainClass + minecraftArguments;
-            Process p = new Process();
-            p.StartInfo.FileName = "cmd.exe";
-            p.StartInfo.UseShellExecute = false;    //是否使用操作系统shell启动
-            p.StartInfo.RedirectStandardInput = true;//接受来自调用程序的输入信息
-            p.StartInfo.RedirectStandardOutput = true;//由调用程序获取输出信息
-            p.StartInfo.RedirectStandardError = true;//重定向标准错误输出
-            p.StartInfo.CreateNoWindow = true;//不显示程序窗口
-            p.Start();//启动程序
-            p.StandardInput.WriteLine(FinalCommand+@"&exit");
-            p.StandardInput.AutoFlush = true;
-            string output = p.StandardOutput.ReadToEnd();
-            p.WaitForExit();
-            p.Close();
-            Console.WriteLine(output);
-        }
     }
 }

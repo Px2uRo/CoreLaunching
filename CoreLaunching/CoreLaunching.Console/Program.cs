@@ -4,7 +4,6 @@ using cl = CoreLaunching;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using CoreLaunching.ObjectTemples;
 using System.Collections.Generic;
 
 namespace CoreLaunching.Console
@@ -13,7 +12,8 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
-
+            var launcher = new CoreLaunching.Launcher(1024, 1536, "cl", "1", @"I:\test\1.17.json", @"C:\Users\Lenovo\AppData\Roaming\.minecraft\libraries");
+            launcher.Launch(@"C:\Program Files\Java\jre1.8.0_291\bin\javaw.exe",@"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", "allow",false,true,845,600);
         }
 
         /*private static void OldTestCommand1()
