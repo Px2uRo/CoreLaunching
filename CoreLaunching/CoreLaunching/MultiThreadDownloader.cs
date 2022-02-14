@@ -121,7 +121,7 @@ namespace CoreLaunching
             {
                 request = (HttpWebRequest)HttpWebRequest.Create(webUrl);
                 filesize = request.GetResponse().ContentLength;//取得目标文件的长度
-                Console.WriteLine("文件大小：{0} kb", filesize);
+                Console.WriteLine("正在下载 {1} 到 {2}，文件大小：{0} kb", filesize,webUrl,dir);
                 request.Abort();
             }
             catch (Exception er)
@@ -199,7 +199,7 @@ namespace CoreLaunching
             FileStream fstemp;
             int readfile;
             byte[] bytes = new byte[512];
-            fs = new FileStream(FinalLocalFolder, System.IO.FileMode.Create);
+            fs = new FileStream(FinalLocalFolder, System.IO.FileMode.CreateNew);
             for (int k = 0; k < thread; k++)
             {
                 fstemp = new FileStream(tmpFileNamew[k], System.IO.FileMode.Open);

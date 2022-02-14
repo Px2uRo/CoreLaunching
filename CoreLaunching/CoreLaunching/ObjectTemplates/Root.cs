@@ -38,6 +38,8 @@ namespace CoreLaunching.ObjectTemplates
 	{
 		[JsonProperty("game")]
 		public Game game { get; set; }
+		[JsonProperty("jvm")]
+		public Jvm jvm { get; set; }
 
 	}
 
@@ -186,18 +188,47 @@ namespace CoreLaunching.ObjectTemplates
 	}
 
 
-
+	[JsonConverter(typeof(JvmConverter))]
 	class Jvm
 	{
-		[JsonProperty("Array")]
-		public string Array { get; set; }
+        class JvmConverter : JsonConverter
+        {
+            public override bool CanConvert(Type objectType)
+            {
+				return true;
+			}
 
-		[JsonProperty("rules")]
-		public Rules rules { get; set; }
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+				var result = (JArray)serializer.Deserialize(reader);
 
-		[JsonProperty("value")]
-		public Value value { get; set; }
+				var jvm = new Jvm();
+				jvm.Array = new List<string>();
+				jvm.RuleValuePairs = new List<RuleValuePair>();
+				foreach (var arrayItem in result)
+				{
+					if (arrayItem is JObject)
+					{
+						var pair = JsonConvert.DeserializeObject<RuleValuePair>(arrayItem.ToString());
+						jvm.RuleValuePairs.Add(pair);
+					}
+					else
+					{
+						jvm.Array.Add(arrayItem.Value<string>());
+					}
+				}
 
+				return jvm;
+			}
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        [JsonProperty("Array")]
+		public List<string> Array { get; set; }
+		public List<RuleValuePair> RuleValuePairs { get; set; }
 	}
 
 	class Os

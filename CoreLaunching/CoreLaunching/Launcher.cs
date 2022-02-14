@@ -18,6 +18,8 @@ namespace CoreLaunching
         public string FinnalCommand;
         #region JVM&DebugArguments
         public static string JavaPath = @"""${JavaPath}""";//指定 Java 路径
+        public static string JvmArguments = "${jvmArguments}";
+        public static string ELJvmArgumets;
         public static string OtherArguments = " ${OtherArguments}";//指定额外参数
         public static string classLibPath { get; set; }
         public static string clinetJarPath { get; set; }
@@ -47,7 +49,8 @@ namespace CoreLaunching
             "${cp}",
             "${mainClass}",
             "${minecraftArgumets}",
-            "${logging}"
+            "${logging}",
+            "${jvmArguments}"
             };
         List<string> ELConv = new List<string>
             {
@@ -64,16 +67,18 @@ namespace CoreLaunching
             accessToken,
             userProperties,
             userType,
-            cpCommandLine,
+            ELcpCommandLine,
             mainClass,
             minecraftArguments,
-            loggingArgs
+            loggingArgs,
+            ELJvmArgumets
             };
         #endregion
         #region MCArgs
         static string minecraftArguments = "${minecraftArgumets}";
         public static string mainClass=" ${mainClass}";
         public static string cpCommandLine = @" -cp ${cp}";
+        public static string ELcpCommandLine;
         public static string PlayerName { get; set; }
         public static string GameVersion { get; set; }
         public static string GameDir { get; set; }
@@ -99,7 +104,7 @@ namespace CoreLaunching
             AutoSystemVersion();
             Memory = " -Xmx" + MaxMemory.ToString() + "m -Xmn" + MinMemory.ToString() + "m";
             LauncherInfo = " -Dminecraft.launcher.brand=" + Name + " -Dminecraft.launcher.version=" + Version;
-            FinnalCommand = JavaPath + OtherArguments + HeapDumpPath + DebugOSNameVersion + nativeLibExportPath + LauncherInfo + cpCommandLine + Memory + loggingArgs + mainClass + minecraftArguments;
+            FinnalCommand = JavaPath + OtherArguments + JvmArguments + HeapDumpPath + DebugOSNameVersion + nativeLibExportPath + Memory + loggingArgs + mainClass + minecraftArguments;
             root = JsonConvert.DeserializeObject<CoreLaunching.ObjectTemplates.Root>(LoadJson(TargetJson).ToString());
             classLibPath = CpPath;
             nativeLibExportPath = "";
@@ -145,16 +150,17 @@ namespace CoreLaunching
             return jsonObject;
         }
         #endregion
-        public void Launch(string javaPath,string nativePath,string allow,bool is_demo_user,bool has_custom_resolution,int width,int height)
+        public void Launch(string javaPath,string nativePath,string action,bool is_demo_user,bool has_custom_resolution,int width,int height)
         {
             JavaPath = javaPath;
             minecraftArguments = "";
-            cpCommandLine = "";
+            //版本大于等于 1.13 时
             if (root.minecraftArguments == null&&root.arguments!=null)
             {
-                ParseMinecraftArguments(allow, is_demo_user, has_custom_resolution, width, height);
-                cpCommandLine = AutoCpCommandLine(root);
+                ParseMinecraftArguments(action, is_demo_user, has_custom_resolution, width, height);
+                AutoCpCommandLine(root);
                 ExportNative(root,0,nativePath);
+                AutoRuledJVMArguments(root,action,0,"64");
             }
             else if (root.arguments != null && root.minecraftArguments == null)
             {
@@ -178,7 +184,7 @@ namespace CoreLaunching
         /// <param name="has_custom_resolution">是否有自定义分辨率</param>
         /// <param name="width">宽多少</param>
         /// <param name="height">高多少</param>
-        void ParseMinecraftArguments(string allow,bool is_demo_user,bool has_custom_resolution,int width,int height)
+        void ParseMinecraftArguments(string action,bool is_demo_user,bool has_custom_resolution,int width,int height)
         {
             for (int i = 0; i < root.arguments.game.Array.Count; i++)
             {
@@ -186,7 +192,7 @@ namespace CoreLaunching
             }
             for (int i = 0; i < root.arguments.game.RuleValuePairs.Count; i++)
             {
-                if (allow == root.arguments.game.RuleValuePairs[i].rules.ActionFeaturesOSGroup.action)
+                if (action == root.arguments.game.RuleValuePairs[i].rules.ActionFeaturesOSGroup.action)
                 {
                     if (is_demo_user == root.arguments.game.RuleValuePairs[i].rules.ActionFeaturesOSGroup.features.is_demo_user && true == root.arguments.game.RuleValuePairs[i].rules.ActionFeaturesOSGroup.features.is_demo_user)
                     {
@@ -205,15 +211,18 @@ namespace CoreLaunching
                 }
             }
         }
-        
-        string AutoCpCommandLine(ObjectTemplates.Root root)
+        void AutoCpCommandLine(ObjectTemplates.Root root)
         {
-            string cpCommandLine = "";
             for (int i = 0; i < root.libraries.Array.Count; i++)
             {
-                cpCommandLine = cpCommandLine + Path.Combine(classLibPath, root.libraries.Array[i].downloads.artifact.path.ToString().Replace("/","\\")) + ";";
+                if (File.Exists(Path.Combine(classLibPath, root.libraries.Array[i].downloads.artifact.path.ToString().Replace("/", "\\")))==false)
+                {
+                    var aa = Path.Combine(classLibPath, root.libraries.Array[i].downloads.artifact.path.ToString().Replace("/", "\\"));
+                    MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
+                    multiThreadDownloader.GoGoGo(root.libraries.Array[i].downloads.artifact.url.ToString(), 64, aa.Replace(Path.GetFileName(aa),""));
+                }
+                ELcpCommandLine = ELcpCommandLine + Path.Combine(classLibPath, root.libraries.Array[i].downloads.artifact.path.ToString().Replace("/","\\")) + ";";
             }
-            return cpCommandLine;
         }
         public enum MyPlatforms
         {
@@ -244,7 +253,7 @@ namespace CoreLaunching
                     {
                         ZipFile.ExtractToDirectory(path[i], nativeLibExportPath,true);
                     }
-                    else if (File.Exists(path[i]) != true)
+                    else if (File.Exists(path[i]) == false)
                     {
                         MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
                         multiThreadDownloader.GoGoGo(urls[i], 64, path[i].Replace(Path.GetFileName(path[i]), ""));
@@ -258,6 +267,46 @@ namespace CoreLaunching
             else if (platform == MyPlatforms.Linux)
             {
 
+            }
+        }
+        void AutoRuledJVMArguments(ObjectTemplates.Root root,string action,MyPlatforms Platform,string arch)
+        {
+            //拼接有规定的参数
+            for (int i = 0; i < root.arguments.jvm.RuleValuePairs.Count; i++)
+            {
+                if (action == root.arguments.jvm.RuleValuePairs[i].rules.ActionFeaturesOSGroup.action.ToString())
+                {
+                    //当你是 Windows 时
+                    if (Platform == MyPlatforms.Windows&&root.arguments.jvm.RuleValuePairs[i].rules.ActionFeaturesOSGroup.os.name=="windows"&& root.arguments.jvm.RuleValuePairs[i].rules.ActionFeaturesOSGroup.os.version==null)
+                    {
+                        for (int j = 0; j < root.arguments.jvm.RuleValuePairs[i].value.Array.Count; j++)
+                        {
+                            ELJvmArgumets = ELJvmArgumets+" " + root.arguments.jvm.RuleValuePairs[i].value.Array[j].ToString();
+                        }
+                    }
+                    //当你是 osx 时
+                    else if (Platform == MyPlatforms.Osx)
+                    {
+
+                    }
+                    //当你是 Linux 时
+                    else if (Platform == MyPlatforms.Linux)
+                    {
+
+                    }
+                    if(arch == root.arguments.jvm.RuleValuePairs[i].rules.ActionFeaturesOSGroup.os.arch)
+                    {
+                        for (int j = 0; j < root.arguments.jvm.RuleValuePairs[i].value.Array.Count; j++)
+                        {
+                            ELJvmArgumets = ELJvmArgumets + " " + root.arguments.jvm.RuleValuePairs[i].value.Array[j].ToString();
+                        }
+                    }
+                }
+            }
+            //拼接普通参数
+            for (int i = 0; i < root.arguments.jvm.Array.Count; i++)
+            {
+                ELJvmArgumets = ELJvmArgumets + " " + root.arguments.jvm.Array[i].ToString();
             }
         }
         #endregion
