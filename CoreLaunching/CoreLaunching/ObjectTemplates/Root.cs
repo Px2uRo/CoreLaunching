@@ -352,7 +352,7 @@ namespace CoreLaunching.ObjectTemplates
 		public string component { get; set; }
 
 		[JsonProperty("majorVersion")]
-		public string majorVersion { get; set; }
+		public int majorVersion { get; set; }
 
 	}
 

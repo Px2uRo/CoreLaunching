@@ -22,6 +22,7 @@ namespace CoreLaunching
         string javaPath;
         string classLibPath;
         string nativeLibPath;
+        int javaMajorVersion;
 
         #region ctor
         /// <summary>
@@ -39,6 +40,7 @@ namespace CoreLaunching
             clientJarPath = ClientJarPath;
             nativeLibPath = NativeLibPath;
             javaPath = JavaPath;
+            javaMajorVersion=GetFileversion(JavaPath);
         }
         #endregion
         #region 自动获取系统版本并传参
@@ -227,6 +229,10 @@ namespace CoreLaunching
         #endregion
         public void Launch(bool AutoDownload,MyPlatforms Platform,string Action,string Arch,int MinMemory,int MaxMemory,string OtherArguments)
         {
+            if (javaMajorVersion != root.javaVersion.majorVersion)
+            {
+                throw new Exception("你的版本不符合Json上的要求");
+            }
             FinnalCommand = @""""+javaPath+@"""";
             FinnalCommand += AutoSystemVersion();
             //拼接 classpath 函数
@@ -237,7 +243,7 @@ namespace CoreLaunching
             {
                 FinnalCommand += AutoRuledJVMArguments(root,Action,Platform,Arch);
                 FinnalCommand += " -Xmx"+MaxMemory.ToString()+"M"+" -Xmn"+MinMemory.ToString()+"M";
-                FinnalCommand += root.logging.client.argument.ToString();
+                FinnalCommand += " " + root.logging.client.argument.ToString();
                 FinnalCommand += " " + OtherArguments;
                 FinnalCommand += " " + root.mainClass.ToString();
                 FinnalCommand += " " + ParseMinecraftArguments("false", false, false, 0, 0);
@@ -294,12 +300,16 @@ namespace CoreLaunching
             {
                 FinnalCommand = FinnalCommand.Replace(ELList[i], ELListToConv[i]);
             }
-
-            Console.WriteLine(GetFileversion(javaPath));
+            Process p = new Process();
+            p.StartInfo.FileName = "cmd.exe";
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardInput = true;
+            p.Start();
+            p.StandardInput.WriteLine(FinnalCommand);
         }
-        string GetFileversion (string Path)
+        int GetFileversion (string Path)
         {
-            string s = FileVersionInfo.GetVersionInfo(Path).FileVersion;
+            int s = FileVersionInfo.GetVersionInfo(Path).FileMajorPart;
             return s;
         }
     }

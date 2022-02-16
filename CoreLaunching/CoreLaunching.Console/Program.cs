@@ -21,7 +21,7 @@ namespace CoreLaunching.Console
                 "msa","realse",
                 800,600);
             JVMArgsInfo jVMArgsInfo = new JVMArgsInfo(@"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", "CoreLaunching", new Version(0, 8), @"C:\Users\Lenovo\AppData\Roaming\.minecraft\assets\log_configs\client-1.7.xml");
-            Launcher launcher = new Launcher(@"I:\test\1.17.json", gameArg,jVMArgsInfo, @"C:\Users\Lenovo\AppData\Roaming\.minecraft\libraries", @"C:\Users\Lenovo\AppData\Roaming\.minecraft\versions\1.7.10\1.7.10.jar",@"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", @"C:\Program Files\Java\jre1.8.0_291\bin\javaw.exe");
+            Launcher launcher = new Launcher(@"I:\test\1.17.json", gameArg,jVMArgsInfo, @"C:\Users\Lenovo\AppData\Roaming\.minecraft\libraries", @"C:\Users\Lenovo\AppData\Roaming\.minecraft\versions\1.7.10\1.7.10.jar",@"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", @"C:\Program Files\Microsoft\jdk-17.0.1.12-hotspot\bin\javaw.exe");
             launcher.Launch(true,0,"false","x64",32, 2048,"-UseG1GC");
         }
 
