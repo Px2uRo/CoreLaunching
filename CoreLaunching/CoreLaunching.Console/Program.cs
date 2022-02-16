@@ -12,8 +12,17 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
-            var launcher = new CoreLaunching.Launcher(1024, 1536, "cl", "1", @"I:\test\1.17.json", @"C:\Users\Lenovo\AppData\Roaming\.minecraft\libraries");
-            launcher.Launch(@"C:\Program Files\Java\jre1.8.0_291\bin\javaw.exe",@"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", "allow",false,true,845,600);
+            GameArgsInfo gameArg = new GameArgsInfo("Xia","1.7.10", 
+                @"C:\Users\Lenovo\AppData\Roaming\.minecraft",
+                @"C:\Users\Lenovo\AppData\Roaming\.minecraft\assets",
+                "1.7.10","0000000000000003A98F501BCC514FFA", 
+                "0000000000000003A98F501BCC514FFA",
+                "${clientId}","${auth_xuid}",
+                "msa","realse",
+                800,600);
+            JVMArgsInfo jVMArgsInfo = new JVMArgsInfo(@"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", "CoreLaunching", new Version(0, 8), @"C:\Users\Lenovo\AppData\Roaming\.minecraft\assets\log_configs\client-1.7.xml");
+            Launcher launcher = new Launcher(@"I:\test\1.17.json", gameArg,jVMArgsInfo, @"C:\Users\Lenovo\AppData\Roaming\.minecraft\libraries", @"C:\Users\Lenovo\AppData\Roaming\.minecraft\versions\1.7.10\1.7.10.jar",@"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", @"C:\Program Files\Java\jre1.8.0_291\bin\javaw.exe");
+            launcher.Launch(true,0,"false","x64",32, 2048,"-UseG1GC");
         }
 
         /*private static void OldTestCommand1()
