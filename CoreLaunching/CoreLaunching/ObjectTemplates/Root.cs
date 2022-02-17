@@ -409,7 +409,7 @@ namespace CoreLaunching.ObjectTemplates
 		public Natives natives { get; set; }
 
 		[JsonProperty("rules")]
-		public Rules rules { get; set; }
+		public List<RuleValuePair> rules { get; set; }
 
 		[JsonProperty("extract")]
 		public Extract extract { get; set; }

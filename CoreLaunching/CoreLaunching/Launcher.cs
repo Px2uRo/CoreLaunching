@@ -46,7 +46,7 @@ namespace CoreLaunching
         #region 自动获取系统版本并传参
         String SetOSNameVersion(string Name, string Version)
         {
-            return " " + @"""-Dos.name=" + Name + @"""" + " " + "-Dos.version=" + Version;
+            return " -Dos.name=" + Name + " -Dos.version=" + Version;
         }
         /// <summary>
         /// 自动获取版本并且传参数
@@ -110,20 +110,27 @@ namespace CoreLaunching
             }
             return minecraftArguments;
         }
-        String AutoCpCommandLine(ObjectTemplates.Root root,string classLibPath,bool AutoDownload,string ClientJarPath)
+        String AutoCpCommandLine(ObjectTemplates.Root root,string classLibPath,bool AutoDownload,string ClientJarPath,MyPlatforms Platform)
         {
             var ELcpCommandLine = "";
             for (int i = 0; i < root.libraries.Array.Count; i++)
             {
-                var aa = Path.Combine(classLibPath, root.libraries.Array[i].downloads.artifact.path.ToString().Replace("/", "\\"));
+                var aa = Path.Combine(classLibPath, root.libraries.Array[i].downloads.artifact.path.Replace("/", @"\"));
+                if (root.libraries.Array[i].downloads.classifiers == null&&root.libraries.Array[i].rules==null)
+                {
+                    ELcpCommandLine += aa + ";";
+                }
+                else if(root.libraries.Array[i].downloads.artifact != null && root.libraries.Array[i].downloads.classifiers == null && root.libraries.Array[i].rules.Count == 2)
+                {
+                    ELcpCommandLine += aa + ";";
+                }
                 if (File.Exists(aa) == false && AutoDownload == true)
                 {
                     MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
                     multiThreadDownloader.GoGoGo(root.libraries.Array[i].downloads.artifact.url.ToString(), 64, aa.Replace(Path.GetFileName(aa), ""));
                 }
-                ELcpCommandLine = ELcpCommandLine + aa + ";";
             }
-            ELcpCommandLine = ELcpCommandLine + ClientJarPath;
+            ELcpCommandLine =@""""+ ELcpCommandLine + ClientJarPath+@"""";
             return ELcpCommandLine;
         }
         public enum MyPlatforms
@@ -229,22 +236,22 @@ namespace CoreLaunching
         #endregion
         public void Launch(bool AutoDownload,MyPlatforms Platform,string Action,string Arch,int MinMemory,int MaxMemory,string OtherArguments)
         {
-            if (javaMajorVersion != root.javaVersion.majorVersion)
-            {
-                throw new Exception("你的版本不符合Json上的要求");
-            }
             FinnalCommand = @""""+javaPath+@"""";
+            FinnalCommand += " " + OtherArguments;
             FinnalCommand += AutoSystemVersion();
             //拼接 classpath 函数
-            JVMArgs.classpath = AutoCpCommandLine(root, classLibPath, AutoDownload, clientJarPath);
+            JVMArgs.classpath = AutoCpCommandLine(root, classLibPath, AutoDownload, clientJarPath,Platform);
             ExportNative(root, Platform, nativeLibPath, classLibPath);
             //版本大于等于 1.13 时
             if (root.minecraftArguments == null && root.arguments != null)
             {
+                if (javaMajorVersion != root.javaVersion.majorVersion)
+                {
+                    throw new Exception("你的版本不符合Json上的要求");
+                }
                 FinnalCommand += AutoRuledJVMArguments(root,Action,Platform,Arch);
-                FinnalCommand += " -Xmx"+MaxMemory.ToString()+"M"+" -Xmn"+MinMemory.ToString()+"M";
+                FinnalCommand += " -Xmn"+MinMemory.ToString()+"M"+ " -Xmx" + MaxMemory.ToString() + "M";
                 FinnalCommand += " " + root.logging.client.argument.ToString();
-                FinnalCommand += " " + OtherArguments;
                 FinnalCommand += " " + root.mainClass.ToString();
                 FinnalCommand += " " + ParseMinecraftArguments("false", false, false, 0, 0);
             }
@@ -335,13 +342,19 @@ namespace CoreLaunching
         /// <param name="Version_Type">版本类型</param>
         /// <param name="Resolution_Width">窗口宽</param>
         /// <param name="Resolution_Height">窗口高</param>
-        public GameArgsInfo(string Auth_Player_Name, string Version_Name, string Game_Directory, string Assets_Root, string Assets_index_name, string Auth_Uuid, string Auth_Access_Token, string ClientId, string Auth_Xuid, string User_Type, string Version_Type,int Resolution_Width,int Resolution_Height)
+        public GameArgsInfo(string Auth_Player_Name, string Game_Directory, string Assets_Root, string Target_JSON, string Auth_Uuid, string Auth_Access_Token, string ClientId, string Auth_Xuid, string User_Type, string Version_Type,int Resolution_Width,int Resolution_Height)
         {
+            StreamReader loader = File.OpenText(Target_JSON);
+            JsonTextReader reader = new JsonTextReader(loader);//NewtonJson读取文件。
+            var jsonObject = (JObject)JToken.ReadFrom(reader);//强制转换 一个抽象的 JSON 令牌 到一个 JSON 对象。
+            ObjectTemplates.Root root = JsonConvert.DeserializeObject<ObjectTemplates.Root>(jsonObject.ToString());
+            loader.Close();
+            reader.Close();
             auth_player_name = Auth_Player_Name;
-            version_name = Version_Name;
+            version_name = root.id;
             game_directory = Game_Directory;
             assets_root = Assets_Root;
-            assets_index_name = Assets_index_name;
+            assets_index_name = root.assetIndex.id;
             auth_uuid = Auth_Uuid;
             auth_access_token = Auth_Access_Token;
             clientId = ClientId;

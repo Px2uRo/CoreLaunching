@@ -12,17 +12,26 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
-            GameArgsInfo gameArg = new GameArgsInfo("Xia","1.7.10", 
-                @"C:\Users\Lenovo\AppData\Roaming\.minecraft",
-                @"C:\Users\Lenovo\AppData\Roaming\.minecraft\assets",
-                "1.7.10","0000000000000003A98F501BCC514FFA", 
+            GameArgsInfo gameArg = new GameArgsInfo("Xia",
+                @"D:\Gaming\Minecraft\My_Minecraft\.minecraft",
+                @"D:\Gaming\Minecraft\My_Minecraft\.minecraft\assets",
+                @"I:\test\1.17.json", "0000000000000003A98F501BCC514FFA", 
                 "0000000000000003A98F501BCC514FFA",
                 "${clientId}","${auth_xuid}",
                 "msa","realse",
                 800,600);
-            JVMArgsInfo jVMArgsInfo = new JVMArgsInfo(@"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", "CoreLaunching", new Version(0, 8), @"C:\Users\Lenovo\AppData\Roaming\.minecraft\assets\log_configs\client-1.7.xml");
-            Launcher launcher = new Launcher(@"I:\test\1.17.json", gameArg,jVMArgsInfo, @"C:\Users\Lenovo\AppData\Roaming\.minecraft\libraries", @"C:\Users\Lenovo\AppData\Roaming\.minecraft\versions\1.7.10\1.7.10.jar",@"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", @"C:\Program Files\Microsoft\jdk-17.0.1.12-hotspot\bin\javaw.exe");
-            launcher.Launch(true,0,"false","x64",32, 2048,"-UseG1GC");
+            JVMArgsInfo jVMArgsInfo = new JVMArgsInfo(
+                @"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", 
+                "CoreLaunching", 
+                new Version(1000, 8), 
+                @"C:\Users\Lenovo\AppData\Roaming\.minecraft\assets\log_configs\client-1.12.xml");
+            Launcher launcher = new Launcher(@"I:\test\1.17.json", 
+                gameArg,jVMArgsInfo, 
+                @"C:\Users\Lenovo\AppData\Roaming\.minecraft\libraries",
+                @"D:\Gaming\Minecraft\My_Minecraft\.minecraft\versions\1.18.1\1.18.1.jar",
+                @"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", 
+                @"C:\Program Files\Microsoft\jdk-17.0.1.12-hotspot\bin\javaw.exe");
+            launcher.Launch(true,0,"allow","x64",32, 2048, "-XX:+UseG1GC -XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -Dfml.ignoreInvalidMinecraftCertificates=True -Dfml.ignorePatchDiscrepancies=True -Dlog4j2.formatMsgNoLookups=true");
         }
 
         /*private static void OldTestCommand1()
