@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using CoreLaunching.Auth;
+using CoreLaunching.MSA;
 
 namespace CoreLaunching.Console
 {
@@ -14,7 +15,6 @@ namespace CoreLaunching.Console
         static void Main(string[] args)
         {
             Auther auth = new Auther();
-            auth.auth("hongyu233@outlook.com", "adew225sczxgr341");
         }
 
         /*private static void OldTestCommand1()
