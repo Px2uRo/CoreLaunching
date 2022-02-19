@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using CoreLaunching.Auth;
-using CoreLaunching.MSA;
 
 namespace CoreLaunching.Console
 {
@@ -14,7 +13,8 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
-            Auther auth = new Auther();
+            MSAuther auth = new MSAuther();
+            auth.MSAuth("https://login.live.com/oauth20_desktop.srf?code=M.R3_BAY.bf0894ec-0929-eb6d-a922-ee02995b61a9&lc=2052");
         }
 
         /*private static void OldTestCommand1()
