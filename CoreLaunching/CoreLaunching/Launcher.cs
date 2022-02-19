@@ -12,8 +12,12 @@ using System.Diagnostics;
 
 namespace CoreLaunching
 {
+    /// <summary>
+    /// CoreLaunching 启动部分
+    /// </summary>
     public class Launcher
     {
+        #region Launcher 类里面可以复用的变量
         ObjectTemplates.Root root;
         GameArgsInfo GameArgs;
         JVMArgsInfo JVMArgs;
@@ -23,15 +27,19 @@ namespace CoreLaunching
         string classLibPath;
         string nativeLibPath;
         int javaMajorVersion;
-
-        #region ctor
+        #endregion
+        #region ctor(构造函数)
         /// <summary>
-        /// Todo:写注释
+        /// CoreLaunching.Launcher 的构造函数
         /// </summary>
-        /// <param name="TargetJSON"></param>
-        /// <param name="gameArgs"></param>
-        /// <param name="jVMArgs"></param>
-        public Launcher(string TargetJSON, GameArgsInfo gameArgs, JVMArgsInfo jVMArgs,string ClassLibPath,string ClientJarPath,string NativeLibPath,string JavaPath)
+        /// <param name="TargetJSON">目标 JSON</param>
+        /// <param name="JavaPath">目标 Java</param>
+        /// <param name="jVMArgs">请 new 一个 CoreLaunching.JVMArgsInfo 类</param>
+        /// <param name="ClassLibPath">Cp 参数的根目录</param>
+        /// <param name="ClientJarPath">客户端 (游戏 Jar) 的目录</param>
+        /// <param name="NativeLibPath">Native 库的路径</param>
+        /// <param name="gameArgs">请 new 一个 CoreLaunching.GameArgsInfo 类</param>
+        public Launcher(string TargetJSON, string JavaPath,JVMArgsInfo jVMArgs, string ClassLibPath,string ClientJarPath,string NativeLibPath,GameArgsInfo gameArgs)
         {
             root = JsonConvert.DeserializeObject<ObjectTemplates.Root>(LoadJson(TargetJSON).ToString());
             GameArgs = gameArgs;
@@ -40,7 +48,7 @@ namespace CoreLaunching
             clientJarPath = ClientJarPath;
             nativeLibPath = NativeLibPath;
             javaPath = JavaPath;
-            javaMajorVersion=GetFileversion(JavaPath);
+            javaMajorVersion=FileVersionInfo.GetVersionInfo(JavaPath).FileMajorPart;
         }
         #endregion
         #region 自动获取系统版本并传参
@@ -113,22 +121,38 @@ namespace CoreLaunching
         String AutoCpCommandLine(ObjectTemplates.Root root,string classLibPath,bool AutoDownload,string ClientJarPath,MyPlatforms Platform)
         {
             var ELcpCommandLine = "";
-            for (int i = 0; i < root.libraries.Array.Count; i++)
+            if (Platform == MyPlatforms.Windows)
             {
-                var aa = Path.Combine(classLibPath, root.libraries.Array[i].downloads.artifact.path.Replace("/", @"\"));
-                if (root.libraries.Array[i].downloads.classifiers == null&&root.libraries.Array[i].rules==null)
+                for (int i = 0; i < root.libraries.Array.Count; i++)
                 {
-                    ELcpCommandLine += aa + ";";
+                    var aa = Path.Combine(classLibPath, root.libraries.Array[i].downloads.artifact.path.Replace("/", @"\"));
+                    if (root.libraries.Array[i].downloads.classifiers == null && root.libraries.Array[i].rules == null)
+                    {
+                        ELcpCommandLine += aa + ";";
+                        if (File.Exists(aa) == false && AutoDownload == true)
+                        {
+                            MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
+                            multiThreadDownloader.GoGoGo(root.libraries.Array[i].downloads.artifact.url.ToString(), 64, aa.Replace(Path.GetFileName(aa), ""));
+                        }
+                    }
+                    else if (root.libraries.Array[i].downloads.artifact != null && root.libraries.Array[i].downloads.classifiers == null && root.libraries.Array[i].rules.Count == 2)
+                    {
+                        ELcpCommandLine += aa + ";";
+                        if (File.Exists(aa) == false && AutoDownload == true)
+                        {
+                            MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
+                            multiThreadDownloader.GoGoGo(root.libraries.Array[i].downloads.artifact.url.ToString(), 64, aa.Replace(Path.GetFileName(aa), ""));
+                        }
+                    }
                 }
-                else if(root.libraries.Array[i].downloads.artifact != null && root.libraries.Array[i].downloads.classifiers == null && root.libraries.Array[i].rules.Count == 2)
-                {
-                    ELcpCommandLine += aa + ";";
-                }
-                if (File.Exists(aa) == false && AutoDownload == true)
-                {
-                    MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
-                    multiThreadDownloader.GoGoGo(root.libraries.Array[i].downloads.artifact.url.ToString(), 64, aa.Replace(Path.GetFileName(aa), ""));
-                }
+            }
+            else if(Platform == MyPlatforms.Osx)
+            {
+
+            }
+            else if(Platform == MyPlatforms.Linux)
+            {
+
             }
             ELcpCommandLine =@""""+ ELcpCommandLine + ClientJarPath+@"""";
             return ELcpCommandLine;
@@ -137,7 +161,7 @@ namespace CoreLaunching
         {
             Windows,Osx,Linux
         }
-        void ExportNative(ObjectTemplates.Root root,MyPlatforms platform,string nativePath,string classLibPath)
+        void ExportNative(ObjectTemplates.Root root,MyPlatforms platform,string nativePath,string classLibPath,bool AutoDownload)
         {
             List<string> path = new List<string>();
             List<string> urls = new List<string>();
@@ -152,6 +176,14 @@ namespace CoreLaunching
                             path.Add(Path.Combine(classLibPath, root.libraries.Array[i].downloads.classifiers.natives_windows.path.ToString().Replace("/", "\\")));
                             urls.Add(root.libraries.Array[i].downloads.classifiers.natives_windows.url);
                         }
+                    }
+                }
+                if (AutoDownload == true)
+                {
+                    for (int i = 0; i < path.Count; i++)
+                    {
+                        MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
+                        multiThreadDownloader.GoGoGo(urls[i], 64, Path.GetDirectoryName(path[i]));
                     }
                 }
                 for (int i = 0; i < path.Count; i++)
@@ -241,13 +273,13 @@ namespace CoreLaunching
             FinnalCommand += AutoSystemVersion();
             //拼接 classpath 函数
             JVMArgs.classpath = AutoCpCommandLine(root, classLibPath, AutoDownload, clientJarPath,Platform);
-            ExportNative(root, Platform, nativeLibPath, classLibPath);
+            ExportNative(root, Platform, nativeLibPath, classLibPath,AutoDownload);
             //版本大于等于 1.13 时
             if (root.minecraftArguments == null && root.arguments != null)
             {
                 if (javaMajorVersion != root.javaVersion.majorVersion)
                 {
-                    throw new Exception("你的版本不符合Json上的要求");
+                    throw new Exception("你的版本不符合 Json 上的要求");
                 }
                 FinnalCommand += AutoRuledJVMArguments(root,Action,Platform,Arch);
                 FinnalCommand += " -Xmn"+MinMemory.ToString()+"M"+ " -Xmx" + MaxMemory.ToString() + "M";
@@ -269,7 +301,6 @@ namespace CoreLaunching
                 "${launcher_name}",
                 "${launcher_version}",
                 "${classpath}",
-                "${path}",
 
                 "${auth_player_name}",
                 "${version_name}",
@@ -289,7 +320,6 @@ namespace CoreLaunching
                 JVMArgs.launcher_name,
                 JVMArgs.launcher_version.ToString(),
                 JVMArgs.classpath,
-                JVMArgs.log4jPath,
 
                 GameArgs.auth_player_name,
                 GameArgs.version_name,
@@ -307,17 +337,14 @@ namespace CoreLaunching
             {
                 FinnalCommand = FinnalCommand.Replace(ELList[i], ELListToConv[i]);
             }
+            Console.WriteLine(FinnalCommand);
             Process p = new Process();
             p.StartInfo.FileName = "cmd.exe";
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardInput = true;
+            p.StartInfo.CreateNoWindow = true;
             p.Start();
             p.StandardInput.WriteLine(FinnalCommand);
-        }
-        int GetFileversion (string Path)
-        {
-            int s = FileVersionInfo.GetVersionInfo(Path).FileMajorPart;
-            return s;
         }
     }
     #region 参数信息类
@@ -342,11 +369,11 @@ namespace CoreLaunching
         /// <param name="Version_Type">版本类型</param>
         /// <param name="Resolution_Width">窗口宽</param>
         /// <param name="Resolution_Height">窗口高</param>
-        public GameArgsInfo(string Auth_Player_Name, string Game_Directory, string Assets_Root, string Target_JSON, string Auth_Uuid, string Auth_Access_Token, string ClientId, string Auth_Xuid, string User_Type, string Version_Type,int Resolution_Width,int Resolution_Height)
+        public GameArgsInfo(string Auth_Player_Name, string Game_Directory, string Assets_Root, string Asset_Index_JSON, string Auth_Uuid, string Auth_Access_Token, string ClientId, string Auth_Xuid, string User_Type, string Version_Type,int Resolution_Width,int Resolution_Height)
         {
-            StreamReader loader = File.OpenText(Target_JSON);
-            JsonTextReader reader = new JsonTextReader(loader);//NewtonJson读取文件。
-            var jsonObject = (JObject)JToken.ReadFrom(reader);//强制转换 一个抽象的 JSON 令牌 到一个 JSON 对象。
+            StreamReader loader = File.OpenText(Asset_Index_JSON);
+            JsonTextReader reader = new JsonTextReader(loader);
+            var jsonObject = (JObject)JToken.ReadFrom(reader);
             ObjectTemplates.Root root = JsonConvert.DeserializeObject<ObjectTemplates.Root>(jsonObject.ToString());
             loader.Close();
             reader.Close();
@@ -380,27 +407,25 @@ namespace CoreLaunching
     }
 
     /// <summary>
-    /// JVM 参数类
+    /// JVM 基础参数信息类。
     /// </summary>
     public class JVMArgsInfo
     {
         /// <summary>
-        /// 
+        /// JVM 基础参数信息类。
         /// </summary>
         /// <param name="Natives_Directory">native 文件夹路径</param>
         /// <param name="Launcher_Name">启动器名称</param>
         /// <param name="Launcher_Version">启动器版本</param>
-        public JVMArgsInfo(string Natives_Directory,string Launcher_Name,Version Launcher_Version,string Log4jPath)
+        public JVMArgsInfo(string Natives_Directory,string Launcher_Name,Version Launcher_Version)
         {
             natives_directory = Natives_Directory;
             launcher_name = Launcher_Name;
             launcher_version = Launcher_Version;
-            log4jPath = Log4jPath;
         }
         public string natives_directory { get; set; }
         public string launcher_name { get; set; }
         public Version launcher_version { get; set; }
-        public string log4jPath { get; set; }
         public string classpath { get; set; }
     }
     #endregion

@@ -199,7 +199,7 @@ namespace CoreLaunching
             FileStream fstemp;
             int readfile;
             byte[] bytes = new byte[512];
-            fs = new FileStream(FinalLocalFolder, System.IO.FileMode.CreateNew);
+            fs = new FileStream(FinalLocalFolder, System.IO.FileMode.OpenOrCreate);
             for (int k = 0; k < thread; k++)
             {
                 fstemp = new FileStream(tmpFileNamew[k], System.IO.FileMode.Open);
