@@ -75,7 +75,7 @@ namespace CoreLaunching.Auth
     public class MSAuther
     {
         public Uri LogInUrl = new Uri(@"https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf");
-        public string MSAuth(string url)
+        public PlayerInfo MSAuth(string url)
         {
             try
             {
@@ -99,11 +99,92 @@ namespace CoreLaunching.Auth
                 string responseFromServer = reader.ReadToEnd();
                 var MSARoot = JsonConvert.DeserializeObject<MSAuthResponse>(responseFromServer);
                 #endregion
-                return MSARoot.access_token;
+                #region XBL(XboxLive) 验证
+                Content = "{\"Properties\": {\"AuthMethod\": \"RPS\",\"SiteName\": \"user.auth.xboxlive.com\",\"RpsTicket\": \"" +MSARoot.access_token+ "\"},\"RelyingParty\": \"http://auth.xboxlive.com\",\"TokenType\": \"JWT\"}";
+                HttpWebRequest request2 = (HttpWebRequest)WebRequest.Create(@"https://user.auth.xboxlive.com/user/authenticate");
+                request2.Method = "POST";
+                byte[] byteArray2 = Encoding.UTF8.GetBytes(Content);
+                request2.ContentLength = byteArray2.Length;
+                request2.ContentType = "application/json";
+                request2.Accept = "application/json";
+                Stream dataStream2 = request2.GetRequestStream();
+                dataStream2.Write(byteArray2, 0, byteArray2.Length);
+                dataStream2.Close();
+                WebResponse response2 = request2.GetResponse();
+                dataStream2 = response2.GetResponseStream();
+                StreamReader reader2 = new StreamReader(dataStream2);
+                responseFromServer = reader2.ReadToEnd();
+                var XBLRoot = JsonConvert.DeserializeObject<XBLResponse>(responseFromServer);
+                #endregion
+                #region XSTS 验证
+                Content = "{ \"Properties\": {\"SandboxId\": \"RETAIL\",\"UserTokens\":[\"" +XBLRoot.Token+ "\"]},\"RelyingParty\": \"rp://api.minecraftservices.com/\",\"TokenType\": \"JWT\"}";
+                HttpWebRequest request3 = (HttpWebRequest)WebRequest.Create(@"https://xsts.auth.xboxlive.com/xsts/authorize");
+                request3.Method = "POST";
+                byte[] byteArray3 = Encoding.UTF8.GetBytes(Content);
+                request3.ContentLength = byteArray3.Length;
+                request3.ContentType = "application/json";
+                request3.Accept = "application/json";
+                Stream dataStream3 = request3.GetRequestStream();
+                dataStream3.Write(byteArray3, 0, byteArray3.Length);
+                dataStream3.Close();
+                WebResponse response3 = request3.GetResponse();
+                dataStream3 = response3.GetResponseStream();
+                StreamReader reader3 = new StreamReader(dataStream3);
+                responseFromServer = reader3.ReadToEnd();
+                var XSTSRoot = JsonConvert.DeserializeObject<XBLResponse>(responseFromServer);
+                #endregion
+                #region 登录 Minecraft
+                Content = "{\"identityToken\":\"XBL3.0 x=" + XSTSRoot.DisplayClaims.xui[0].uhs + ";" + XSTSRoot.Token + "\"}";
+                HttpWebRequest request4 = (HttpWebRequest)WebRequest.Create(@"https://api.minecraftservices.com/authentication/login_with_xbox");
+                request4.Method = "POST";
+                byte[] byteArray4 = Encoding.UTF8.GetBytes(Content);
+                request4.ContentLength = byteArray4.Length;
+                request4.ContentType = "application/json";
+                request4.Accept = "application/json";
+                Stream dataStream4 = request4.GetRequestStream();
+                dataStream4.Write(byteArray4, 0, byteArray4.Length);
+                dataStream4.Close();
+                WebResponse response4 = request4.GetResponse();
+                dataStream4 = response4.GetResponseStream();
+                StreamReader reader4 = new StreamReader(dataStream4);
+                responseFromServer = reader4.ReadToEnd();
+                var login_with_xboxResponseRoot = JsonConvert.DeserializeObject<login_with_xboxResponse>(responseFromServer);
+                #endregion
+                #region 检查游戏所有权
+                HttpWebRequest request5 = (HttpWebRequest)WebRequest.Create(@"https://api.minecraftservices.com/entitlements/mcstore");
+                request5.Method = "GET";
+                request5.Headers.Add("Authorization: Bearer "+login_with_xboxResponseRoot.access_token);
+                WebResponse response5 = request5.GetResponse();
+                var dataStream5 = response5.GetResponseStream();
+                StreamReader reader5 = new StreamReader(dataStream5);
+                responseFromServer = reader5.ReadToEnd();
+                var OwnershipRoot = JsonConvert.DeserializeObject<Ownership>(responseFromServer);
+                #endregion
+                #region 获取个人资料
+                if (OwnershipRoot.items.Count != 0)
+                {
+                    HttpWebRequest request6 = (HttpWebRequest)WebRequest.Create(@"https://api.minecraftservices.com/minecraft/profile");
+                    request6.Method = "GET";
+                    request6.Headers.Add("Authorization: Bearer " + login_with_xboxResponseRoot.access_token);
+                    WebResponse response6 = request6.GetResponse();
+                    var dataStream6 = response6.GetResponseStream();
+                    StreamReader reader6 = new StreamReader(dataStream6);
+                    responseFromServer = reader6.ReadToEnd();
+                    PlayerInfo playerInfoRoot = JsonConvert.DeserializeObject<PlayerInfo>(responseFromServer);
+                    playerInfoRoot.access_token = login_with_xboxResponseRoot.access_token;
+                    return playerInfoRoot;
+                }
+                else
+                {
+                    return null;
+                    throw new Exception("这号没得 Minecraft");
+                }
+                #endregion
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                return null;
+                throw new Exception("ex");
             }
         }
 

@@ -70,6 +70,7 @@ csharp_style_var_when_type_is_apparent = false:silent
 csharp_style_var_elsewhere = false:silent
 csharp_prefer_simple_using_statement = true:suggestion
 csharp_prefer_braces = true:silent
+csharp_style_prefer_parameter_null_checking = true:suggestion
 
 [*.vb]
 #### 命名样式 ####

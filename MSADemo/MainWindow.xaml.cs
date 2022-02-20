@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using CoreLaunching.Auth;
+using CoreLaunching.ObjectTemplates;
 
 namespace MSADemo
 {
@@ -31,7 +32,8 @@ namespace MSADemo
 
         private void Wbv_SourceChanged(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2SourceChangedEventArgs e)
         {
-           TB.Text = MSauth.MSAuth(wbv.Source.ToString());
+           PlayerInfo plr = MSauth.MSAuth(wbv.Source.ToString());
+           TB.Text = "你的uuid:" + plr.id;
         }
     }
 }
