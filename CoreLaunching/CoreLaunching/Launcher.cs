@@ -211,7 +211,7 @@ namespace CoreLaunching
                 Stream stream = Response.GetResponseStream();
                 StreamReader reader = new StreamReader(stream);
                 string aa = reader.ReadToEnd();
-
+                var bb = JsonConvert.DeserializeObject<ObjectTemplates.AssetObject>(aa);
             }
         }
         String AutoRuledJVMArguments(ObjectTemplates.Root root,string action,MyPlatforms Platform,string arch)
