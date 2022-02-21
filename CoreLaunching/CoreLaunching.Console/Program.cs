@@ -13,8 +13,7 @@ namespace CoreLaunching.Console
     {
         static void Main(string[] args)
         {
-            MSAuther auth = new MSAuther();
-            auth.MSAuth("https://login.live.com/oauth20_desktop.srf?code=M.R3_BAY.bf0894ec-0929-eb6d-a922-ee02995b61a9&lc=2052");
+            OTC3();
         }
 
         /*private static void OldTestCommand1()
@@ -61,23 +60,23 @@ namespace CoreLaunching.Console
 
         }*/
 
-        //    void OTC3()
-    //    {
-    //        GameArgsInfo gameArg = new GameArgsInfo("Xia",
-    //@"D:\Gaming\Minecraft\My_Minecraft\.minecraft",
-    //@"D:\Gaming\Minecraft\My_Minecraft\.minecraft\assets",
-    //@"I:\test\1.17.json", "0000000000000003A98F501BCC514FFA",
-    //"0000000000000003A98F501BCC514FFA",
-    //"${clientId}", "${auth_xuid}",
-    //"msa", "realse",
-    //800, 600);
-    //        JVMArgsInfo jVMArgsInfo = new JVMArgsInfo(
-    //            @"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random",
-    //            "CoreLaunching",
-    //            new Version(1000, 8));
-    //        Launcher launcher = new Launcher(@"I:\test\1.17.json", @"C:\Program Files\Microsoft\jdk-17.0.1.12-hotspot\bin\javaw.exe", jVMArgsInfo, @"C:\Users\Lenovo\AppData\Roaming\.minecraft\libraries", @"D:\Gaming\Minecraft\My_Minecraft\.minecraft\versions\1.18.1\1.18.1.jar", @"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", gameArg);
-    //        launcher.Launch(true, Launcher.MyPlatforms.Windows, "allow", "x64", 24, 2048, "-XX:+UseG1GC -XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -Dfml.ignoreInvalidMinecraftCertificates=True -Dfml.ignorePatchDiscrepancies=True -Dlog4j2.formatMsgNoLookups=true");
-    //    }
+        static void OTC3()
+        {
+            GameArgsInfo gameArg = new GameArgsInfo("Xia",
+    @"D:\Gaming\Minecraft\My_Minecraft\.minecraft",
+    @"D:\Gaming\Minecraft\My_Minecraft\.minecraft\assets",
+    @"I:\test\1.17.json", "0000000000000003A98F501BCC514FFA",
+    "0000000000000003A98F501BCC514FFA",
+    "${clientId}", "${auth_xuid}",
+    "msa", "realse",
+    800, 600);
+            JVMArgsInfo jVMArgsInfo = new JVMArgsInfo(
+                @"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random",
+                "CoreLaunching",
+                new Version(1000, 8));
+            Launcher launcher = new Launcher(@"I:\test\1.17.json", @"C:\Program Files\Microsoft\jdk-17.0.1.12-hotspot\bin\javaw.exe", jVMArgsInfo, @"C:\Users\Lenovo\AppData\Roaming\.minecraft\libraries", @"D:\Gaming\Minecraft\My_Minecraft\.minecraft\versions\1.18.1\1.18.1.jar", @"C:\Users\Lenovo\AppData\Roaming\.minecraft\bin\Random", gameArg);
+            launcher.Launch(true, Launcher.MyPlatforms.Windows, "allow", "x64", 24, 2048, "-XX:+UseG1GC -XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -Dfml.ignoreInvalidMinecraftCertificates=True -Dfml.ignorePatchDiscrepancies=True -Dlog4j2.formatMsgNoLookups=true");
+        }
     }
 }
  

@@ -184,7 +184,7 @@ namespace CoreLaunching.Auth
             catch (Exception ex)
             {
                 return null;
-                throw new Exception("ex");
+                throw new Exception(ex.Message);
             }
         }
 

@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using CoreLaunching;
 using System.IO.Compression;
 using System.Diagnostics;
+using System.Net;
 
 namespace CoreLaunching
 {
@@ -178,24 +179,17 @@ namespace CoreLaunching
                         }
                     }
                 }
-                if (AutoDownload == true)
-                {
-                    for (int i = 0; i < path.Count; i++)
-                    {
-                        MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
-                        multiThreadDownloader.GoGoGo(urls[i], 64, Path.GetDirectoryName(path[i]));
-                    }
-                }
                 for (int i = 0; i < path.Count; i++)
                 {
                     if (File.Exists(path[i]) == true)
                     {
                         ZipFile.ExtractToDirectory(path[i], nativePath,true);
                     }
-                    else if (File.Exists(path[i]) == false)
+                    else if (File.Exists(path[i]) == false&&AutoDownload==true)
                     {
                         MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
                         multiThreadDownloader.GoGoGo(urls[i], 64, path[i].Replace(Path.GetFileName(path[i]), ""));
+                        ZipFile.ExtractToDirectory(path[i], nativePath, true);
                     }
                 }
             }
@@ -205,6 +199,18 @@ namespace CoreLaunching
             }
             else if (platform == MyPlatforms.Linux)
             {
+
+            }
+        }
+        void AuthAssets(ObjectTemplates.Root root,bool AutoDownload)
+        {
+            if (AutoDownload==true)
+            {
+                var request = WebRequest.Create(root.assetIndex.url) as HttpWebRequest; //设置参数
+                WebResponse Response = request.GetResponse();
+                Stream stream = Response.GetResponseStream();
+                StreamReader reader = new StreamReader(stream);
+                string aa = reader.ReadToEnd();
 
             }
         }
@@ -274,6 +280,7 @@ namespace CoreLaunching
             //拼接 classpath 函数
             JVMArgs.classpath = AutoCpCommandLine(root, classLibPath, AutoDownload, clientJarPath,Platform);
             ExportNative(root, Platform, nativeLibPath, classLibPath,AutoDownload);
+            AuthAssets(root, AutoDownload);
             //版本大于等于 1.13 时
             if (root.minecraftArguments == null && root.arguments != null)
             {
