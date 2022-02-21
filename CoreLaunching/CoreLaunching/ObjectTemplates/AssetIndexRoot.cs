@@ -48,4 +48,9 @@ namespace CoreLaunching.ObjectTemplates
         public string Size { get; set; }
         public string Hash { get; set; }
     }
+    public class AssetIndexRoot
+    {
+        [JsonProperty("objects")]
+        public AssetObject assetObject { get; set; }
+    }
 }

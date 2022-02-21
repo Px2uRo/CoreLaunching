@@ -202,7 +202,7 @@ namespace CoreLaunching
 
             }
         }
-        void AuthAssets(ObjectTemplates.Root root,bool AutoDownload)
+        void AuthAssets(string AssetsDir,bool AutoDownload)
         {
             if (AutoDownload==true)
             {
@@ -211,7 +211,26 @@ namespace CoreLaunching
                 Stream stream = Response.GetResponseStream();
                 StreamReader reader = new StreamReader(stream);
                 string aa = reader.ReadToEnd();
-                var bb = JsonConvert.DeserializeObject<ObjectTemplates.AssetObject>(aa);
+                var bb = JsonConvert.DeserializeObject<ObjectTemplates.AssetIndexRoot>(aa);
+                for (int i = 0; i < bb.assetObject.SizeHashPairList.Count; i++)
+                {
+                    var hash = bb.assetObject.SizeHashPairList[i].Hash;
+                    var url = Path.Combine("http://resources.download.minecraft.net", hash.Substring(0, 2).Replace("\\","/"), hash.Replace("\\","/"));
+                    var path = Path.Combine(AssetsDir, "objects", hash.Substring(0, 2), hash);
+                    if (File.Exists(path) == false)
+                    {
+                        MultiThreadDownloader md = new MultiThreadDownloader();
+                        md.GoGoGo(url, 64, Path.GetDirectoryName(path));
+                    }
+                    else if (File.Exists(path) == true)
+                    {
+                        if (new FileInfo(path).Length.ToString() != bb.assetObject.SizeHashPairList[i].Size)
+                        {
+                            MultiThreadDownloader md = new MultiThreadDownloader();
+                            md.GoGoGo(url, 64, Path.GetDirectoryName(path));
+                        }
+                    }
+                }
             }
         }
         String AutoRuledJVMArguments(ObjectTemplates.Root root,string action,MyPlatforms Platform,string arch)
@@ -280,7 +299,7 @@ namespace CoreLaunching
             //拼接 classpath 函数
             JVMArgs.classpath = AutoCpCommandLine(root, classLibPath, AutoDownload, clientJarPath,Platform);
             ExportNative(root, Platform, nativeLibPath, classLibPath,AutoDownload);
-            AuthAssets(root, AutoDownload);
+            AuthAssets(GameArgs.assets_root, AutoDownload);
             //版本大于等于 1.13 时
             if (root.minecraftArguments == null && root.arguments != null)
             {
