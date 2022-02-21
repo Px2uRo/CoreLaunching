@@ -60,23 +60,45 @@ namespace CoreLaunching.Console
 
         }*/
 
+        [Obsolete("这是一个过时的测试模块，请不要使用！")]
         static void OTC3()
         {
-            GameArgsInfo gameArg = new GameArgsInfo("Xia",
-    @"..\.minecraft",
-    @"..\.minecraft\assets",
-    @"I:\test\1.17.json", "0000000000000003A98F501BCC514FFA",
-    "0000000000000003A98F501BCC514FFA",
-    "${clientId}", "${auth_xuid}",
-    "msa", "realse",
-    800, 600);
-            JVMArgsInfo jVMArgsInfo = new JVMArgsInfo(
+            var gameArg = new GameArgsInfo(
+                "Xia",
+                @"..\.minecraft",
+                @"..\.minecraft\assets",
+                 PathManager.MainJsonPath,
+                "0000000000000003A98F501BCC514FFA",
+                "0000000000000003A98F501BCC514FFA",
+                "${clientId}",
+                "${auth_xuid}",
+                "msa",
+                "realse",
+                800,
+                600);
+
+            var jVMArgsInfo = new JVMArgsInfo(
                 @"..\.minecraft\bin\Random",
                 "CoreLaunching",
                 new Version(1000, 8));
-            Launcher launcher = new Launcher(@"I:\test\1.17.json", @"C:\Program Files\Microsoft\jdk-17.0.1.12-hotspot\bin\javaw.exe", jVMArgsInfo, @"C:\Users\Lenovo\AppData\Roaming\.minecraft\libraries", @"..\.minecraft\versions\1.18.1\1.18.1.jar", @"..\.minecraft\bin\Random", gameArg);
-            launcher.Launch(true, Launcher.MyPlatforms.Windows, "allow", "x64", 24, 2048, "-XX:+UseG1GC -XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -Dfml.ignoreInvalidMinecraftCertificates=True -Dfml.ignorePatchDiscrepancies=True -Dlog4j2.formatMsgNoLookups=true");
+
+            var launcher = new Launcher(
+                PathManager.MainJsonPath, 
+                PathManager.JavawPath, 
+                jVMArgsInfo, 
+                @"C:\Users\Lenovo\AppData\Roaming\.minecraft\libraries", 
+                @"..\.minecraft\versions\1.18.1\1.18.1.jar", 
+                @"..\.minecraft\bin\Random", 
+                gameArg);
+
+            launcher.Launch(
+                false, 
+                Launcher.MyPlatforms.Windows, 
+                "allow", 
+                "x64", 
+                24, 
+                2048, 
+                "-XX:+UseG1GC -XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -Dfml.ignoreInvalidMinecraftCertificates=True -Dfml.ignorePatchDiscrepancies=True -Dlog4j2.formatMsgNoLookups=true");
         }
     }
 }
- 

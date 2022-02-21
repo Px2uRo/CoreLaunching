@@ -17,7 +17,7 @@ namespace CoreLaunching.Auth
         {
 
         }
-        public void auth(string Account,string Password)
+        public void Auth(string Account,string Password)
         {
             try
             {
@@ -44,7 +44,7 @@ namespace CoreLaunching.Auth
                 }
             }
         }
-        public void auth(string Account,string Password,string AuthServer)
+        public void Auth(string Account,string Password,string AuthServer)
         {
             try
             {

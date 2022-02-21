@@ -61,7 +61,7 @@ namespace CoreLaunching
                 multi = multiarg;
             }
 
-            public void receive()//接收线程  
+            public void Receive()//接收线程  
             {
                 filename = multi.tmpFileNamew[threadindex];//直接赋值，无需考虑数组问题，下同。
                 strUrl = multi.webUrl;
@@ -101,6 +101,18 @@ namespace CoreLaunching
                 multi.threadw[threadindex] = true;
             }
         }
+
+        /// <summary>
+        /// 重载。
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="threadNum"></param>
+        /// <param name="localFolder"></param>
+        public void GoGoGo(Uri url, int threadNum, string localFolder)
+        {
+            GoGoGo(url.ToString(), threadNum, localFolder);
+        }
+
         public void GoGoGo(string url, int threadNum, string localFolder)
         {
             #region 设置一堆参数
@@ -166,16 +178,16 @@ namespace CoreLaunching
             for (int j = 0; j < thread; j++)//开始创建线程下载。
             {
                 httpfile[j] = new HttpFile(this,j);
-                threadk[j] = new Thread(new ThreadStart(httpfile[j].receive));
+                threadk[j] = new Thread(new ThreadStart(httpfile[j].Receive));
                 threadk[j].Start();
             }
-            hbfile();//合并线程接收的文件  
+            Hbfile();//合并线程接收的文件  
             dir.Delete(true);//强制删除临时文件夹
             #endregion
 
         }
 
-        void hbfile()
+        void Hbfile()
         {
             bool hb;
             while (true)//等待  

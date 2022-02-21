@@ -12,42 +12,42 @@ namespace CoreLaunching.ObjectTemplates
 	class Root
 	{
 		[JsonProperty("arguments")]
-		public Arguments arguments { get; set; }
+		public Arguments Arguments { get; set; }
 
-		public AssetIndex assetIndex { get; set; }
+		public AssetIndex AssetIndex { get; set; }
 
-		public string assets { get; set; }
+		public string Assets { get; set; }
 
-		public int complianceLevel { get; set; }
+		public int ComplianceLevel { get; set; }
 
-		public Downloads downloads { get; set; }
-		public string id { get; set; }
-		public JavaVersion javaVersion { get; set; }
-		public Libraries libraries { get; set; }
-		public Logging logging { get; set; }
-		public string mainClass { get; set; }
-		public int minimumLauncherVersion { get; set; }
-		public string releaseTime { get; set; }
-		public string time { get; set; }
-		public string type { get; set; }
+		public Downloads Downloads { get; set; }
+		public string Id { get; set; }
+		public JavaVersion JavaVersion { get; set; }
+		public Libraries Libraries { get; set; }
+		public Logging Logging { get; set; }
+		public string MainClass { get; set; }
+		public int MinimumLauncherVersion { get; set; }
+		public string ReleaseTime { get; set; }
+		public string Time { get; set; }
+		public string Type { get; set; }
 
-		public string minecraftArguments { get; set; }
+		public string MinecraftArguments { get; set; }
 	}
 
 	class Arguments
 	{
 		[JsonProperty("game")]
-		public Game game { get; set; }
+		public Game Game { get; set; }
 		[JsonProperty("jvm")]
-		public Jvm jvm { get; set; }
+		public Jvm Jvm { get; set; }
 
 	}
 
 	class RuleValuePair
 	{
-		public Rules rules { get; set; }
+		public Rules Rules { get; set; }
 
-		public Value value { get; set; }
+		public Value Value { get; set; }
 	}
 
 	[JsonConverter(typeof(GameArrayConverter))]
@@ -126,13 +126,13 @@ namespace CoreLaunching.ObjectTemplates
 	{
 
 		[JsonProperty("action")]
-		public string action { get; set; }
+		public string Action { get; set; }
 
 		[JsonProperty("features")]
-		public Features features { get; set; }
+		public Features Features { get; set; }
 
 		[JsonProperty("os")]
-		public Os os { get; set; }
+		public Os Os { get; set; }
 
 	}
 
@@ -140,10 +140,10 @@ namespace CoreLaunching.ObjectTemplates
 	class Features
 	{
 		[JsonProperty("is_demo_user")]
-		public bool is_demo_user { get; set; }
+		public bool Is_demo_user { get; set; }
 
 		[JsonProperty("has_custom_resolution")]
-		public bool has_custom_resolution { get; set; }
+		public bool Has_custom_resolution { get; set; }
 
 	}
 
@@ -234,125 +234,125 @@ namespace CoreLaunching.ObjectTemplates
 	class Os
 	{
 		[JsonProperty("name")]
-		public string name { get; set; }
+		public string Name { get; set; }
 
 		[JsonProperty("version")]
-		public string version { get; set; }
+		public string Version { get; set; }
 
 		[JsonProperty("arch")]
-		public string arch { get; set; }
+		public string Arch { get; set; }
 
 	}
 
 	class AssetIndex
 	{
 		[JsonProperty("id")]
-		public string id { get; set; }
+		public string Id { get; set; }
 
 		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
+		public string Sha1 { get; set; }
 
 		[JsonProperty("size")]
-		public string size { get; set; }
+		public string Size { get; set; }
 
 		[JsonProperty("totalSize")]
-		public string totalSize { get; set; }
+		public string TotalSize { get; set; }
 
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 
 	}
 
 	class Downloads
 	{
 		[JsonProperty("client")]
-		public Client client { get; set; }
+		public Client Client { get; set; }
 
 		[JsonProperty("client_mappings")]
-		public Client_mappings client_mappings { get; set; }
+		public Client_mappings Client_mappings { get; set; }
 
 		[JsonProperty("server")]
-		public Server server { get; set; }
+		public Server Server { get; set; }
 
 		[JsonProperty("server_mappings")]
-		public Server_mappings server_mappings { get; set; }
+		public Server_mappings Server_mappings { get; set; }
 
 		[JsonProperty("artifact")]
-		public Artifact artifact { get; set; }
+		public Artifact Artifact { get; set; }
 
 		[JsonProperty("classifiers")]
-		public Classifiers classifiers { get; set; }
+		public Classifiers Classifiers { get; set; }
 
 	}
 
 	class Client
 	{
 		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
+		public string Sha1 { get; set; }
 
 		[JsonProperty("size")]
-		public string size { get; set; }
+		public string Size { get; set; }
 
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 
 		[JsonProperty("argument")]
-		public string argument { get; set; }
+		public string Argument { get; set; }
 
 		[JsonProperty("file")]
-		public File file { get; set; }
+		public File File { get; set; }
 
 		[JsonProperty("type")]
-		public string type { get; set; }
+		public string Type { get; set; }
 
 	}
 
 	class Client_mappings
 	{
 		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
+		public string Sha1 { get; set; }
 
 		[JsonProperty("size")]
-		public string size { get; set; }
+		public string Size { get; set; }
 
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 
 	}
 
 	class Server
 	{
 		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
+		public string Sha1 { get; set; }
 
 		[JsonProperty("size")]
-		public string size { get; set; }
+		public string Size { get; set; }
 
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 
 	}
 
 	class Server_mappings
 	{
 		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
+		public string Sha1 { get; set; }
 
 		[JsonProperty("size")]
-		public string size { get; set; }
+		public string Size { get; set; }
 
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 
 	}
 
 	class JavaVersion
 	{
 		[JsonProperty("component")]
-		public string component { get; set; }
+		public string Component { get; set; }
 
 		[JsonProperty("majorVersion")]
-		public int majorVersion { get; set; }
+		public int MajorVersion { get; set; }
 
 	}
 
@@ -400,156 +400,175 @@ namespace CoreLaunching.ObjectTemplates
 	class LibrariesArrayItem
 	{
 		[JsonProperty("downloads")]
-		public Downloads downloads { get; set; }
+		public Downloads Downloads { get; set; }
 
 		[JsonProperty("name")]
-		public string name { get; set; }
+		public string Name { get; set; }
 
 		[JsonProperty("natives")]
-		public Natives natives { get; set; }
+		public Natives Natives { get; set; }
 
 		[JsonProperty("rules")]
-		public List<RuleValuePair> rules { get; set; }
+		public List<RuleValuePair> Rules { get; set; }
 
 		[JsonProperty("extract")]
-		public Extract extract { get; set; }
+		public Extract Extract { get; set; }
 	}
 
 	class Artifact
 	{
 		[JsonProperty("path")]
-		public string path { get; set; }
+		public string Path { get; set; }
 
 		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
+		public string Sha1 { get; set; }
 
 		[JsonProperty("size")]
-		public string size { get; set; }
+		public string Size { get; set; }
 
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 
 	}
 
 	class Classifiers
 	{
 		[JsonProperty("javadoc")]
-		public Javadoc javadoc { get; set; }
+		public Javadoc Javadoc { get; set; }
 
 		[JsonProperty("natives-linux")]
-		public Natives_linux natives_linux { get; set; }
+		public Natives_linux Natives_linux { get; set; }
 
 		[JsonProperty("natives-macos")]
-		public Natives_macos natives_macos { get; set; }
+		public Natives_macos Natives_macos { get; set; }
 
 		[JsonProperty("natives-windows")]
-		public Natives_windows natives_windows { get; set; }
+		public Natives_windows Natives_windows { get; set; }
 
 		[JsonProperty("sources")]
-		public Sources sources { get; set; }
+		public Sources Sources { get; set; }
 
 		[JsonProperty("natives-osx")]
-		public Natives_osx natives_osx { get; set; }
+		public Natives_osx Natives_osx { get; set; }
 
 	}
 
 	class Javadoc
 	{
 		[JsonProperty("path")]
-		public string path { get; set; }
+		public string Path { get; set; }
 
 		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
+		public string Sha1 { get; set; }
 
 		[JsonProperty("size")]
-		public string size { get; set; }
+		public string Size { get; set; }
 
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 
 	}
 
 	class Natives_linux
 	{
 		[JsonProperty("path")]
-		public string path { get; set; }
+		public string Path { get; set; }
 
 		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
+		public string Sha1 { get; set; }
 
 		[JsonProperty("size")]
-		public string size { get; set; }
+		public string Size { get; set; }
 
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 
 	}
 
 	class Natives_macos
 	{
 		[JsonProperty("path")]
-		public string path { get; set; }
+		public string Path { get; set; }
 
 		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
+		public string Sha1 { get; set; }
 
 		[JsonProperty("size")]
-		public string size { get; set; }
+		public string Size { get; set; }
 
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 
 	}
 
 	class Natives_windows
 	{
 		[JsonProperty("path")]
-		public string path { get; set; }
+		public string Path { get; set; }
 
 		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
+		public string Sha1 { get; set; }
 
 		[JsonProperty("size")]
-		public string size { get; set; }
+		public string Size { get; set; }
 
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 
 	}
+
+
+
+	class Natives_osx
+	{
+		[JsonProperty("path")]
+		public string Path { get; set; }
+
+		[JsonProperty("sha1")]
+		public string Sha1 { get; set; }
+
+		[JsonProperty("size")]
+		public string Size { get; set; }
+
+		[JsonProperty("url")]
+		public string Url { get; set; }
+
+	}
+
 
 	class Sources
 	{
 		[JsonProperty("path")]
-		public string path { get; set; }
+		public string Path { get; set; }
 
 		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
+		public string Sha1 { get; set; }
 
 		[JsonProperty("size")]
-		public string size { get; set; }
+		public string Size { get; set; }
 
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 
 	}
 
 	class Natives
 	{
 		[JsonProperty("osx")]
-		public string osx { get; set; }
+		public string Osx { get; set; }
 
 		[JsonProperty("linux")]
-		public string linux { get; set; }
+		public string Linux { get; set; }
 
 		[JsonProperty("windows")]
-		public string windows { get; set; }
+		public string Windows { get; set; }
 
 	}
 
 	class Extract
 	{
 		[JsonProperty("exclude")]
-		public Exclude exclude { get; set; }
+		public Exclude Exclude { get; set; }
 
 	}
 
@@ -590,43 +609,26 @@ namespace CoreLaunching.ObjectTemplates
 	}
 
 
-
-	class Natives_osx
-	{
-		[JsonProperty("path")]
-		public string path { get; set; }
-
-		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
-
-		[JsonProperty("size")]
-		public string size { get; set; }
-
-		[JsonProperty("url")]
-		public string url { get; set; }
-
-	}
-
 	class Logging
 	{
 		[JsonProperty("client")]
-		public Client client { get; set; }
+		public Client Client { get; set; }
 
 	}
 
 	class File
 	{
 		[JsonProperty("id")]
-		public string id { get; set; }
+		public string Id { get; set; }
 
 		[JsonProperty("sha1")]
-		public string sha1 { get; set; }
+		public string Sha1 { get; set; }
 
 		[JsonProperty("size")]
-		public string size { get; set; }
+		public string Size { get; set; }
 
 		[JsonProperty("url")]
-		public string url { get; set; }
+		public string Url { get; set; }
 
 	}
 
