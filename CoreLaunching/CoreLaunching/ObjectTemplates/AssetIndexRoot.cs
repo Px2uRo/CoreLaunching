@@ -23,7 +23,7 @@ namespace CoreLaunching.ObjectTemplates
             foreach (var item in jObject)
             {
                 var hash = item.Value["hash"].ToString();
-                var size = item.Value["size"].ToString();
+                var size = item.Value["size"].ToObject<long>();
                 assetObjects.SizeHashPairList.Add(new SizeHashPair()
                 {
                     Hash = hash,
@@ -45,12 +45,12 @@ namespace CoreLaunching.ObjectTemplates
     }
     public class SizeHashPair
     {
-        public string Size { get; set; }
+        public long Size { get; set; }
         public string Hash { get; set; }
     }
     public class AssetIndexRoot
     {
         [JsonProperty("objects")]
-        public AssetObject assetObject { get; set; }
+        public AssetObject AssetObject { get; set; }
     }
 }
