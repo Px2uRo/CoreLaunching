@@ -1,0 +1,58 @@
+﻿<UserControl x:Class="CLDemo.Pages.LaunchPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:CLDemo"
+             xmlns:page="clr-namespace:CLDemo.Pages"
+             xmlns:mv="clr-namespace:CLDemo.Modelview"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"  >
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+            <TabControl Grid.Row="0">
+                <TabItem Header="Lgeacy">
+                    <StackPanel VerticalAlignment="Center">
+                        <Grid Height="20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="40"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Plaese cilck taht ADD bottun" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Content="ADD" Command="{Binding LegacyUserViewModel.ShowCmd}"/>
+                            <Button Grid.Column="2" Content="Del" Command="{Binding RemoveCmd}" CommandParameter="{Binding ElementName=LegacyLB}"/>
+                        </Grid>
+                        <ListBox x:Name="LegacyLB" 
+                                 ItemsSource="{Binding LegacyPlayerInfos}" 
+                                 Height="240" SelectionChanged="LegacyLB_SelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </TabItem>
+                <TabItem Header="Micsoroft">
+
+                </TabItem>
+            </TabControl>
+            <Button Content="Lunach!" Grid.Row="1" Margin="3" Command="{Binding LaunchGameViewModel.LaunchGameCmd}"/>
+            <Button Content="Change Game" Grid.Row="2" Margin="3" Command="{Binding GameDirMgrViewModel.ShowCmd}"/>
+        </Grid>
+        <Grid Grid.Column="1" DataContext="{Binding}">
+            <page:AddLegacyUser DataContext="{Binding LegacyUserViewModel}" Visibility="{Binding Visibility}"/>
+            <page:GmeDirMgr DataContext="{Binding GameDirMgrViewModel}" Visibility="{Binding Visibility}"/>
+        </Grid>
+    </Grid>
+</UserControl>

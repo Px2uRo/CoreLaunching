@@ -30,7 +30,7 @@ namespace CoreLaunching.ObjectTemplates
 		public string ReleaseTime { get; set; }
 		public string Time { get; set; }
 		public string Type { get; set; }
-
+		[JsonProperty("minecraftArguments")]
 		public string MinecraftArguments { get; set; }
 	}
 

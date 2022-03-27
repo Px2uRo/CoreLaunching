@@ -10,6 +10,7 @@ using System.Threading;
 
 namespace CoreLaunching
 {
+    [Obsolete("别用，会带来不幸",true)]
     public class MultiThreadDownloader
     {
         #region Arguments
@@ -18,6 +19,7 @@ namespace CoreLaunching
         /// 网络文件地址
         /// </summary>
         public string webUrl;
+        /// <summary>
         /// 线程数
         /// </summary>
         public int thread;
@@ -25,7 +27,7 @@ namespace CoreLaunching
 
         #region 数组变量
         /// <summary>
-        /// //线程结束布尔值数组
+        /// 线程结束布尔值数组
         /// </summary>
         bool[] threadw;
         /// <summary>
@@ -45,7 +47,7 @@ namespace CoreLaunching
         class HttpFile
         {
             #region 此类变量
-            public MultiThreadDownloader multi;
+            public MultiThreadDownloader arg;
             public int threadindex;//线程代号  
             public string filename;//文件名  
             public string strUrl;//接收文件的URL  
@@ -58,35 +60,35 @@ namespace CoreLaunching
             public HttpFile(MultiThreadDownloader multiarg,int threadsNum)//构造函数
             {
                 threadindex= threadsNum;
-                multi = multiarg;
+                arg = multiarg;
             }
 
             public void Receive()//接收线程  
             {
-                filename = multi.tmpFileNamew[threadindex];//直接赋值，无需考虑数组问题，下同。
-                strUrl = multi.webUrl;
+                filename = arg.tmpFileNamew[threadindex];
+                strUrl = arg.webUrl;
                 ns = null;
                 nbytes = new byte[512];
                 nreadsize = 0;
                 Console.WriteLine("线程" + threadindex.ToString() + "开始接收");
                 fs = new FileStream(filename, FileMode.OpenOrCreate);
-                bool pritfed = false;
+                bool logged = false;
                 try
                 {
                     request = (HttpWebRequest)HttpWebRequest.Create(strUrl);
                     //接收的起始位置及接收的长度   
-                    request.AddRange(multi.tmpFileSizeStartw[threadindex],
-                    multi.tmpFileSizeStartw[threadindex] + multi.tmpFileSizew[threadindex]);
+                    request.AddRange(arg.tmpFileSizeStartw[threadindex],
+                    arg.tmpFileSizeStartw[threadindex] + arg.tmpFileSizew[threadindex]);
                     ns = request.GetResponse().GetResponseStream();//获得接收流  
                     nreadsize = ns.Read(nbytes, 0, 512);
                     while (nreadsize > 0)
                     {
                         fs.Write(nbytes, 0, nreadsize);
                         nreadsize = ns.Read(nbytes, 0, 512);
-                        if (pritfed == false)
+                        if (logged == false)
                         {
                             Console.WriteLine("线程" + threadindex.ToString() + "正在接收");
-                            pritfed = true;
+                            logged = true;
                         }
                     }
                     fs.Close();
@@ -98,12 +100,12 @@ namespace CoreLaunching
                     fs.Close();
                 }
                 Console.WriteLine("进程" + threadindex.ToString() + "接收完毕!");
-                multi.threadw[threadindex] = true;
+                arg.threadw[threadindex] = true;
             }
         }
 
         /// <summary>
-        /// 重载。
+        /// 
         /// </summary>
         /// <param name="url"></param>
         /// <param name="threadNum"></param>
@@ -230,8 +232,6 @@ namespace CoreLaunching
                 fstemp.Close();
             }
             fs.Close();
-            Console.WriteLine("结束时间：{0}", DateTime.Now.ToString());
-            Console.WriteLine("下载完成!!!");
         }
     }
 }

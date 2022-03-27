@@ -224,23 +224,29 @@ namespace CoreLaunching
                 for (int i = 0; i < array.Count; i++)
                 {
                     var download = array[i].Downloads;
-                    var aa = Path.Combine(classLibPath, download.Artifact.Path.Replace("/", @"\"));
-                    if (download.Classifiers == null && array[i].Rules == null)
+                    if (download != null)
                     {
-                        ELcpCommandLine += $"{aa};";
-                        if (File.Exists(aa) == false && AutoDownload == true)
+                        if (download.Artifact != null)
                         {
-                            MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
-                            multiThreadDownloader.GoGoGo(download.Artifact.Url, 64, aa.Replace(Path.GetFileName(aa), ""));
-                        }
-                    }
-                    else if (download.Artifact != null && download.Classifiers == null && array[i].Rules.Count == 2)
-                    {
-                        ELcpCommandLine += aa + ";";
-                        if (File.Exists(aa) == false && AutoDownload == true)
-                        {
-                            MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
-                            multiThreadDownloader.GoGoGo(download.Artifact.Url, 64, aa.Replace(Path.GetFileName(aa), ""));
+                            var aa = Path.Combine(classLibPath, download.Artifact.Path.Replace("/", @"\"));
+                            if (download.Classifiers == null && array[i].Rules == null)
+                            {
+                                ELcpCommandLine += $"{aa};";
+                                if (File.Exists(aa) == false && AutoDownload == true)
+                                {
+                                    MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
+                                    multiThreadDownloader.GoGoGo(download.Artifact.Url, 64, aa.Replace(Path.GetFileName(aa), ""));
+                                }
+                            }
+                            else if (download.Artifact != null && download.Classifiers == null && array[i].Rules.Count == 2)
+                            {
+                                ELcpCommandLine += aa + ";";
+                                if (File.Exists(aa) == false && AutoDownload == true)
+                                {
+                                    MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
+                                    multiThreadDownloader.GoGoGo(download.Artifact.Url, 64, aa.Replace(Path.GetFileName(aa), ""));
+                                }
+                            }
                         }
                     }
                 }
@@ -267,12 +273,15 @@ namespace CoreLaunching
             {
                 for (int i = 0; i < root.Libraries.Array.Count; i++)
                 {
-                    if (root.Libraries.Array[i].Downloads.Classifiers != null)
+                    if (root.Libraries.Array[i].Downloads != null)
                     {
-                        if (root.Libraries.Array[i].Downloads.Classifiers.Natives_windows != null)
+                        if (root.Libraries.Array[i].Downloads.Classifiers != null)
                         {
-                            path.Add(Path.Combine(classLibPath, root.Libraries.Array[i].Downloads.Classifiers.Natives_windows.Path.ToString().Replace("/", "\\")));
-                            urls.Add(root.Libraries.Array[i].Downloads.Classifiers.Natives_windows.Url);
+                            if (root.Libraries.Array[i].Downloads.Classifiers.Natives_windows != null)
+                            {
+                                path.Add(Path.Combine(classLibPath, root.Libraries.Array[i].Downloads.Classifiers.Natives_windows.Path.ToString().Replace("/", "\\")));
+                                urls.Add(root.Libraries.Array[i].Downloads.Classifiers.Natives_windows.Url);
+                            }
                         }
                     }
                 }
@@ -316,7 +325,8 @@ namespace CoreLaunching
                 for (int i = 0; i < bb.AssetObject.SizeHashPairList.Count; i++)
                 {
                     var hash = bb.AssetObject.SizeHashPairList[i].Hash;
-                    var url = Path.Combine("http://resources.download.minecraft.net", hash.Substring(0, 2).Replace("\\", "/"), hash.Replace("\\", "/"));
+                    var url = Path.Combine("http://resources.download.minecraft.net", hash.Substring(0, 2), hash);
+                    url = url.Replace("\\", "/");
                     var path = Path.Combine(AssetsDir, "objects", hash.Substring(0, 2), hash);
                     if (File.Exists(path) == false)
                     {
@@ -325,10 +335,19 @@ namespace CoreLaunching
                     }
                     else if (File.Exists(path) == true)
                     {
-                        if (new FileInfo(path).Length != bb.AssetObject.SizeHashPairList[i].Size)
+                        var urlsize = bb.AssetObject.SizeHashPairList[i].Size;
+                        if (new FileInfo(path).Length != urlsize)
                         {
-                            MultiThreadDownloader md = new MultiThreadDownloader();
-                            md.GoGoGo(url, 64, Path.GetDirectoryName(path));
+                            if (urlsize <= 64)
+                            {
+                                MultiThreadDownloader md = new MultiThreadDownloader();
+                                md.GoGoGo(url, 8, Path.GetDirectoryName(path));
+                            }
+                            else
+                            {
+                                MultiThreadDownloader md = new MultiThreadDownloader();
+                                md.GoGoGo(url, 64, Path.GetDirectoryName(path));
+                            }
                         }
                     }
                 }
@@ -422,13 +441,13 @@ namespace CoreLaunching
                 FinnalCommand += " " + root.MainClass.ToString();
                 FinnalCommand += " " + ParseMinecraftArguments("false", false, false, 0, 0);
             }
-            else if (root.Arguments != null && root.MinecraftArguments == null)
+            else if (root.Arguments == null && root.MinecraftArguments != null)
             {
-
+                throw new Exception("并不支持这样子的MC参数解析");
             }
             else if (root.Arguments == null && root.MinecraftArguments == null)
             {
-                throw new ArgumentNullException("json 文件内容为空。");
+                throw new Exception("并不支持这样子的MC参数解析");
             }
             var ELList = new List<string>
             {

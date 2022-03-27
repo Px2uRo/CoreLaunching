@@ -4,7 +4,9 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyVersion></AssemblyVersion>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <Version>0.7.1</Version>
+    <Version>0.7.2</Version>
+    <Authors>FanaticGene</Authors>
+    <PackageIcon>NuGetLogo.png</PackageIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -13,6 +15,10 @@
 
   <ItemGroup>
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
+    <None Include="..\..\NuGetLogo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

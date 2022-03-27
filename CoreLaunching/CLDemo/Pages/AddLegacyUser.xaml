@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="CLDemo.Pages.AddLegacyUser"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:CLDemo.Pages"
+             xmlns:vr="clr-namespace:CLDemo.ValidationRules"
+             xmlns:mv="clr-namespace:CLDemo.Modelview"
+             mc:Ignorable="d"
+             MinWidth="520" MinHeight="375"
+             Background="White">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.5*"/>
+            <RowDefinition Height="0.5*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="0.5*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="添加一个离线账号" FontSize="24" FontWeight="Bold" Margin="20,10"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="1">
+            <TextBlock Text="用户名：" FontSize="20"/>
+            <TextBox Name="NewLegacyName"  FontSize="20" Width="300" Validation.Error="TextBlock_Error" Text="{Binding UserName, ValidatesOnExceptions=True, NotifyOnValidationError=True}"/>
+        </StackPanel>
+        <TextBlock x:Name="errorTextBox" Grid.Row="2" Margin="81,0,0,0"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="3">
+            <TextBlock Text="uuid：" FontSize="20"/>
+            <TextBox Name="NewLegacyUuid" Text="{Binding Uuid}" FontSize="20" Width="300"/>
+        </StackPanel>
+        <Button Grid.Row="4" Width="200" Height="60" 
+                VerticalAlignment="Bottom" Margin="10" 
+                HorizontalAlignment="Right"
+                Content="OK"  Command="{Binding AddRecordCmd}"/>
+    </Grid>
+</UserControl>
