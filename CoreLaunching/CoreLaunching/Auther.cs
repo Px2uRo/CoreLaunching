@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
-using CoreLaunching.ObjectTemplates;
+using CoreLaunching.JsonTemplates;
 using System.IO;
 using Newtonsoft.Json;
 using System.Net.Http;
@@ -100,7 +100,7 @@ namespace CoreLaunching.Auth
                 var MSARoot = JsonConvert.DeserializeObject<MSAuthResponse>(responseFromServer);
                 #endregion
                 #region XBL(XboxLive) 验证
-                Content = "{\"Properties\": {\"AuthMethod\": \"RPS\",\"SiteName\": \"user.auth.xboxlive.com\",\"RpsTicket\": \"" +MSARoot.access_token+ "\"},\"RelyingParty\": \"http://auth.xboxlive.com\",\"TokenType\": \"JWT\"}";
+                Content = "{\"Properties\": {\"AuthMethod\": \"RPS\",\"SiteName\": \"user.auth.xboxlive.com\",\"RpsTicket\": \"" +MSARoot.Access_Token+ "\"},\"RelyingParty\": \"http://auth.xboxlive.com\",\"TokenType\": \"JWT\"}";
                 HttpWebRequest request2 = (HttpWebRequest)WebRequest.Create(@"https://user.auth.xboxlive.com/user/authenticate");
                 request2.Method = "POST";
                 byte[] byteArray2 = Encoding.UTF8.GetBytes(Content);
@@ -134,7 +134,7 @@ namespace CoreLaunching.Auth
                 var XSTSRoot = JsonConvert.DeserializeObject<XBLResponse>(responseFromServer);
                 #endregion
                 #region 登录 Minecraft
-                Content = "{\"identityToken\":\"XBL3.0 x=" + XSTSRoot.DisplayClaims.xui[0].uhs + ";" + XSTSRoot.Token + "\"}";
+                Content = "{\"identityToken\":\"XBL3.0 x=" + XSTSRoot.DisplayClaims.Xui[0].Uhs + ";" + XSTSRoot.Token + "\"}";
                 HttpWebRequest request4 = (HttpWebRequest)WebRequest.Create(@"https://api.minecraftservices.com/authentication/login_with_xbox");
                 request4.Method = "POST";
                 byte[] byteArray4 = Encoding.UTF8.GetBytes(Content);
@@ -148,12 +148,12 @@ namespace CoreLaunching.Auth
                 dataStream4 = response4.GetResponseStream();
                 StreamReader reader4 = new StreamReader(dataStream4);
                 responseFromServer = reader4.ReadToEnd();
-                var login_with_xboxResponseRoot = JsonConvert.DeserializeObject<login_with_xboxResponse>(responseFromServer);
+                var login_with_xboxResponseRoot = JsonConvert.DeserializeObject<Login_With_XboxResponse>(responseFromServer);
                 #endregion
                 #region 检查游戏所有权
                 HttpWebRequest request5 = (HttpWebRequest)WebRequest.Create(@"https://api.minecraftservices.com/entitlements/mcstore");
                 request5.Method = "GET";
-                request5.Headers.Add("Authorization: Bearer "+login_with_xboxResponseRoot.access_token);
+                request5.Headers.Add("Authorization: Bearer "+login_with_xboxResponseRoot.Access_Token);
                 WebResponse response5 = request5.GetResponse();
                 var dataStream5 = response5.GetResponseStream();
                 StreamReader reader5 = new StreamReader(dataStream5);
@@ -161,17 +161,17 @@ namespace CoreLaunching.Auth
                 var OwnershipRoot = JsonConvert.DeserializeObject<Ownership>(responseFromServer);
                 #endregion
                 #region 获取个人资料
-                if (OwnershipRoot.items.Count != 0)
+                if (OwnershipRoot.Items.Count != 0)
                 {
                     HttpWebRequest request6 = (HttpWebRequest)WebRequest.Create(@"https://api.minecraftservices.com/minecraft/profile");
                     request6.Method = "GET";
-                    request6.Headers.Add("Authorization: Bearer " + login_with_xboxResponseRoot.access_token);
+                    request6.Headers.Add("Authorization: Bearer " + login_with_xboxResponseRoot.Access_Token);
                     WebResponse response6 = request6.GetResponse();
                     var dataStream6 = response6.GetResponseStream();
                     StreamReader reader6 = new StreamReader(dataStream6);
                     responseFromServer = reader6.ReadToEnd();
                     PlayerInfo playerInfoRoot = JsonConvert.DeserializeObject<PlayerInfo>(responseFromServer);
-                    playerInfoRoot.access_token = login_with_xboxResponseRoot.access_token;
+                    playerInfoRoot.Access_Token = login_with_xboxResponseRoot.Access_Token;
                     return playerInfoRoot;
                 }
                 else

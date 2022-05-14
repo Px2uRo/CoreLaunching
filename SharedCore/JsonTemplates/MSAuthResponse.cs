@@ -19,13 +19,13 @@ namespace CoreLaunching.JsonTemplates
             public string Scope { get; set; }
 
             [JsonProperty("access_token")]
-            public string Access_Token { get; set; }
+            public string AccessToken { get; set; }
 
             [JsonProperty("refresh_token")]
-            public string Refresh_Token { get; set; }
+            public string RefreshToken { get; set; }
 
             [JsonProperty("user_id")]
-            public string User_Id { get; set; }
+            public string UserId { get; set; }
 
             [JsonProperty("foci")]
             public string Foci { get; set; }
@@ -66,13 +66,13 @@ namespace CoreLaunching.JsonTemplates
             public string Username { get; set; }
 
             [JsonProperty("access_token")]
-            public string Access_Token { get; set; }
+            public string AccessToken { get; set; }
 
             [JsonProperty("token_type")]
-            public string Token_Type { get; set; }
+            public string TokenType { get; set; }
 
             [JsonProperty("expires_in")]
-            public string Expires_In { get; set; }
+            public string ExpiresIn { get; set; }
 
     }
 
@@ -114,7 +114,7 @@ namespace CoreLaunching.JsonTemplates
         [JsonProperty("capes")]
         public List<Capes> Capes { get; set; }
 
-        public string Access_Token { get; set; }
+        public string AccessToken { get; set; }
     }
 
     public class Skins

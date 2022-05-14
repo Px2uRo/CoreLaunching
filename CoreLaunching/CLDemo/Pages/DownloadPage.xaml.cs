@@ -27,7 +27,7 @@ namespace CLDemo.Pages
         string DownloadJson = string.Empty;
         Data.VersionInJson DataInfos;
         int ReadyToDownloadIndex;
-        CoreLaunching.MultiThreadDownloader md = new CoreLaunching.MultiThreadDownloader();
+        CoreLaunching.ThreadDownloader dld;
         public DownloadPage()
         {
             InitializeComponent();
@@ -86,9 +86,10 @@ namespace CLDemo.Pages
                 else
                 {
                     Directory.CreateDirectory(path);
-                    md.GoGoGo(DataInfos.Versions[ReadyToDownloadIndex].Url,8,path);
-                    FileInfo renamefi = new FileInfo(System.IO.Path.Combine(path, System.IO.Path.GetFileName(DataInfos.Versions[ReadyToDownloadIndex].Url)));
-                    renamefi.MoveTo(System.IO.Path.Combine(path, NewDictory.Text + ".json"), true);
+                    dld = new CoreLaunching.ThreadDownloader(DataInfos.Versions[ReadyToDownloadIndex].Url, 8,
+                        System.IO.Path.Combine(path,System.IO.Path.GetFileName(DataInfos.Versions[ReadyToDownloadIndex].Url))
+                        ,System.IO.Path.Combine(Environment.CurrentDirectory,"Temp"));
+                    dld.Download();
                     Modelview.StaticVoids.RefreshGameInfoList(Data.GeneralData.DirInfos[Data.GeneralData.SelectedDirInfoListIndex].Path);
                     SetNewGame.Visibility = Visibility.Hidden;
                     VersionLB.Visibility = Visibility.Visible;

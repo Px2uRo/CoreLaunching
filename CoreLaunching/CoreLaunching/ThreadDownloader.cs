@@ -26,6 +26,7 @@ namespace CoreLaunching
         public string tmpFolderPath;
         public ThreadDownloader(string url, int ThreadNum, string LocalName,string TmpFolderPath)
         {
+            LocalPath.TmpFolderPath = TmpFolderPath;
             tmpFolderPath = TmpFolderPath;
             localName = LocalName;
             threadNum = ThreadNum;
@@ -50,10 +51,6 @@ namespace CoreLaunching
             for (int i = 0; i < threadNum; i++)
             {
                 IsEveryOneOK[i] = false;//每个线程状态的初始值为假，方便最后合并时验证线程是否接受完毕
-                if (LoaclPath.TmpFolderPath==null)
-                {
-                    throw new NullReferenceException();
-                }
                 TmpFileNames[i] = Path.Combine(TmpFolderPath, i.ToString() + ".tmp");
                 if (i < threadNum - 1)
                 {
@@ -70,9 +67,61 @@ namespace CoreLaunching
             #endregion
         }
 
+        public ThreadDownloader(string url, int ThreadNum, string LocalName)
+        {
+            if (LocalPath.TmpFolderPath!=null)
+            {
+                tmpFolderPath = LocalPath.TmpFolderPath;
+                localName = LocalName;
+                threadNum = ThreadNum;
+                TargetUrl = url;
+                TmpFileNames = new string[threadNum];
+                TmpFileRangeStart = new int[threadNum];
+                TmpFileSize = new int[threadNum];
+                IsEveryOneOK = new bool[threadNum];
+                try
+                {
+                    request = (HttpWebRequest)WebRequest.Create(url);
+                    ContentLen = request.GetResponse().ContentLength;
+                }
+                catch (Exception ex)
+                {
+
+                }
+                #region 计算每个线程应该接收文件的大小
+                int Shang = (int)ContentLen / threadNum;//商
+                int Yushu = Shang + (int)ContentLen % threadNum;//余数
+                #region 为数组赋值
+                for (int i = 0; i < threadNum; i++)
+                {
+                    IsEveryOneOK[i] = false;//每个线程状态的初始值为假，方便最后合并时验证线程是否接受完毕
+                    if (LocalPath.TmpFolderPath == null)
+                    {
+                        throw new NullReferenceException();
+                    }
+                    TmpFileNames[i] = Path.Combine(LocalPath.TmpFolderPath, i.ToString() + ".tmp");
+                    if (i < threadNum - 1)
+                    {
+                        TmpFileRangeStart[i] = Shang * i;//每个线程接收文件的起始点  
+                        TmpFileSize[i] = Shang - 1;//每个线程接收文件的长度，减一是因为不把后面起点位置占用。
+                    }
+                    else
+                    {
+                        TmpFileRangeStart[i] = Shang * i;
+                        TmpFileSize[i] = Yushu - 1;
+                    }
+                }
+                #endregion
+                #endregion
+            }
+            else
+            {
+                throw new System.ArgumentNullException();
+            }
+        }
         public void Download()
         {
-            new DirectoryInfo(LoaclPath.TmpFolderPath).Create();
+            new DirectoryInfo(LocalPath.TmpFolderPath).Create();
             IsDone = false;
             Thread[] threadk = new Thread[threadNum];//定义线程数组。
             ReciveOnePart[] httpfile = new ReciveOnePart[threadNum];//HttpFile 是一个类，此处定义类数组。
@@ -137,6 +186,7 @@ namespace CoreLaunching
                 byte[] bytes = new byte[2048];
                 if (File.Exists(args.localName) != true)
                 {
+                    new DirectoryInfo(Path.GetDirectoryName( args.localName)).Create();
                     new FileInfo(args.localName).Create().Close();
                 }
                 while (true)
@@ -170,7 +220,7 @@ namespace CoreLaunching
                 }
                 fs.Close();
                 args.IsDone = true;
-                new DirectoryInfo(LoaclPath.TmpFolderPath).Delete(true);
+                new DirectoryInfo(LocalPath.TmpFolderPath).Delete(true);
             }
         }
 
@@ -223,7 +273,7 @@ namespace CoreLaunching
         }
     }
 
-    public static class LoaclPath
+    public static class LocalPath
     { 
         public static string TmpFolderPath { get; set; }
     }

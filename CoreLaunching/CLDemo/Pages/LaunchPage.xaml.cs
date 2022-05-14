@@ -33,5 +33,10 @@ namespace CLDemo.Pages
         {
             GeneralData.SelectedLegacyListIndex = LegacyLB.SelectedIndex;
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Modelview.StaticVoids.RefreshGameInfoList(Data.GeneralData.DirInfos[Data.GeneralData.SelectedDirInfoListIndex].Path);
+        }
     }
 }

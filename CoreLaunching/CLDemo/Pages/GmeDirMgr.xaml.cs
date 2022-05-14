@@ -52,5 +52,6 @@ namespace CLDemo.Pages
         {
             Data.GeneralData.SelectedGameListIndex = (sender as ListBox).SelectedIndex;
         }
+
     }
 }

@@ -28,6 +28,7 @@ namespace CLDemo
         MiscPage mp = new MiscPage();
         public MainWindow()
         {
+            CoreLaunching.LocalPath.TmpFolderPath =System.IO.Path.Combine( Environment.CurrentDirectory,"TmpFolder");
             InitializeComponent();
             UserPage.Child = lp;
         }

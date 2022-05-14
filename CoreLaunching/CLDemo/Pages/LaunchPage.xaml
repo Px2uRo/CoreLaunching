@@ -48,7 +48,8 @@
                 </TabItem>
             </TabControl>
             <Button Content="Lunach!" Grid.Row="1" Margin="3" Command="{Binding LaunchGameViewModel.LaunchGameCmd}"/>
-            <Button Content="Change Game" Grid.Row="2" Margin="3" Command="{Binding GameDirMgrViewModel.ShowCmd}"/>
+            <Button Content="Change Game" Grid.Row="2" Margin="3"
+                    Command="{Binding GameDirMgrViewModel.ShowCmd}" Click="Button_Click"/>
         </Grid>
         <Grid Grid.Column="1" DataContext="{Binding}">
             <page:AddLegacyUser DataContext="{Binding LegacyUserViewModel}" Visibility="{Binding Visibility}"/>

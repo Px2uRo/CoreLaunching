@@ -132,7 +132,7 @@ namespace CLDemo.Modelview
                                         natives,gameArgsInfo);
                                     try
                                     {
-                                        launcher.Launch(false, Launcher.MyPlatforms.Windows, "disallow", "x64", 24, 2048, "-XX:+UseG1GC -XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -Dfml.ignoreInvalidMinecraftCertificates=True -Dfml.ignorePatchDiscrepancies=True -Dlog4j2.formatMsgNoLookups=true");
+                                        launcher.Launch(true, Launcher.MyPlatforms.Windows, "disallow", "x64", 24, 2048, "-XX:+UseG1GC -XX:-UseAdaptiveSizePolicy -XX:-OmitStackTraceInFastThrow -Dfml.ignoreInvalidMinecraftCertificates=True -Dfml.ignorePatchDiscrepancies=True -Dlog4j2.formatMsgNoLookups=true");
                                     }
                                     catch(Exception ex)
                                     {

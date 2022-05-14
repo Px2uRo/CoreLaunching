@@ -36,7 +36,7 @@ namespace CoreLaunching
             StreamReader loader = File.OpenText(Asset_Index_JSON);
             JsonTextReader reader = new JsonTextReader(loader);
             var jsonObject = (JObject)JToken.ReadFrom(reader);
-            ObjectTemplates.Root root = JsonConvert.DeserializeObject<ObjectTemplates.Root>(jsonObject.ToString());
+            JsonTemplates.Root root = JsonConvert.DeserializeObject<JsonTemplates.Root>(jsonObject.ToString());
             loader.Close();
             reader.Close();
             Auth_player_name = Auth_Player_Name;
@@ -97,6 +97,8 @@ namespace CoreLaunching
     /// </summary>
     public class Launcher
     {
+
+        ThreadDownloader dldr;
         #region Enum
         public enum MyPlatforms
         {
@@ -105,7 +107,7 @@ namespace CoreLaunching
         #endregion
 
         #region Launcher 类里面可以复用的变量
-        private ObjectTemplates.Root root;
+        private JsonTemplates.Root root;
         private GameArgsInfo GameArgs;
         private JVMArgsInfo JVMArgs;
         private string clientJarPath;
@@ -129,7 +131,7 @@ namespace CoreLaunching
         /// <param name="gameArgs">请 new 一个 CoreLaunching.GameArgsInfo 类</param>
         public Launcher(string TargetJSON, string JavaPath, JVMArgsInfo jVMArgs, string ClassLibPath, string ClientJarPath, string NativeLibPath, GameArgsInfo gameArgs)
         {
-            root = JsonConvert.DeserializeObject<ObjectTemplates.Root>(LoadJson(TargetJSON).ToString());
+            root = JsonConvert.DeserializeObject<JsonTemplates.Root>(LoadJson(TargetJSON).ToString());
             GameArgs = gameArgs;
             JVMArgs = jVMArgs;
             classLibPath = ClassLibPath;
@@ -215,11 +217,11 @@ namespace CoreLaunching
             }
             return minecraftArguments;
         }
-        string AutoCpCommandLine(ObjectTemplates.Root root, string classLibPath, bool AutoDownload, string ClientJarPath, MyPlatforms Platform)
+        string AutoCpCommandLine(JsonTemplates.Root root, string classLibPath, bool AutoDownload, string ClientJarPath, MyPlatforms Platform)
         {
-            var ELcpCommandLine = string.Empty;
-            var array = root.Libraries.Array;
-            if (Platform == MyPlatforms.Windows)
+            var ELcpCommandLine = string.Empty;//创建了好 return
+            var array = root.Libraries.Array;//创建了好调用
+            if (Platform == MyPlatforms.Windows)//当平台是 Windows 时
             {
                 for (int i = 0; i < array.Count; i++)
                 {
@@ -234,8 +236,16 @@ namespace CoreLaunching
                                 ELcpCommandLine += $"{aa};";
                                 if (File.Exists(aa) == false && AutoDownload == true)
                                 {
-                                    MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
-                                    multiThreadDownloader.GoGoGo(download.Artifact.Url, 64, aa.Replace(Path.GetFileName(aa), ""));
+                                    dldr = new ThreadDownloader(download.Artifact.Url,64,aa);
+                                    dldr.Download();
+                                    while (true)
+                                    {
+                                        if (dldr.IsDone == true)
+                                        {
+                                            dldr = null;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                             else if (download.Artifact != null && download.Classifiers == null && array[i].Rules.Count == 2)
@@ -243,8 +253,16 @@ namespace CoreLaunching
                                 ELcpCommandLine += aa + ";";
                                 if (File.Exists(aa) == false && AutoDownload == true)
                                 {
-                                    MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
-                                    multiThreadDownloader.GoGoGo(download.Artifact.Url, 64, aa.Replace(Path.GetFileName(aa), ""));
+                                    dldr = new ThreadDownloader(download.Artifact.Url, 64,aa);
+                                    dldr.Download();
+                                    while (true)
+                                    {
+                                        if(dldr.IsDone == true)
+                                        {
+                                            dldr = null;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -265,7 +283,7 @@ namespace CoreLaunching
             return ELcpCommandLine;
         }
 
-        void ExportNative(ObjectTemplates.Root root, MyPlatforms platform, string nativePath, string classLibPath, bool AutoDownload)
+        void ExportNative(JsonTemplates.Root root, MyPlatforms platform, string nativePath, string classLibPath, bool AutoDownload)
         {
             List<string> path = new List<string>();
             List<string> urls = new List<string>();
@@ -293,8 +311,19 @@ namespace CoreLaunching
                     }
                     else if (File.Exists(path[i]) == false && AutoDownload == true)
                     {
-                        MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
-                        multiThreadDownloader.GoGoGo(urls[i], 64, path[i].Replace(Path.GetFileName(path[i]), ""));
+                                    dldr = new ThreadDownloader(urls[i], 64, path[i]);
+                                    dldr.Download();
+                        while (true)
+                        {
+                            if (dldr.IsDone == true)
+                            {
+                                dldr = null;
+                                break;
+                            }
+                        }
+                        //TODO 检查。
+                        //MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader();
+                        //multiThreadDownloader.GoGoGo(urls[i], 64, path[i].Replace(Path.GetFileName(path[i]), ""));
                         ZipFile.ExtractToDirectory(path[i], nativePath, true);
                     }
                 }
@@ -321,7 +350,7 @@ namespace CoreLaunching
                 Stream stream = Response.GetResponseStream();
                 StreamReader reader = new StreamReader(stream);
                 string aa = reader.ReadToEnd();
-                var bb = JsonConvert.DeserializeObject<ObjectTemplates.AssetIndexRoot>(aa);
+                var bb = JsonConvert.DeserializeObject<JsonTemplates.AssetIndexRoot>(aa);
                 for (int i = 0; i < bb.AssetObject.SizeHashPairList.Count; i++)
                 {
                     var hash = bb.AssetObject.SizeHashPairList[i].Hash;
@@ -330,8 +359,19 @@ namespace CoreLaunching
                     var path = Path.Combine(AssetsDir, "objects", hash.Substring(0, 2), hash);
                     if (File.Exists(path) == false)
                     {
-                        MultiThreadDownloader md = new MultiThreadDownloader();
-                        md.GoGoGo(url, 64, Path.GetDirectoryName(path));
+                        dldr = new ThreadDownloader(url, 64, path);
+                        dldr.Download();
+                        while (true)
+                        {
+                            if (dldr.IsDone == true)
+                            {
+                                dldr = null;
+                                break;
+                            }
+                        }
+                        //TODO 检测
+                        //MultiThreadDownloader md = new MultiThreadDownloader();
+                        //md.GoGoGo(url, 64, Path.GetDirectoryName(path));
                     }
                     else if (File.Exists(path) == true)
                     {
@@ -340,13 +380,35 @@ namespace CoreLaunching
                         {
                             if (urlsize <= 64)
                             {
-                                MultiThreadDownloader md = new MultiThreadDownloader();
-                                md.GoGoGo(url, 8, Path.GetDirectoryName(path));
+                                dldr = new ThreadDownloader(url, 8, path);
+                                dldr.Download();
+                                while (true)
+                                {
+                                    if (dldr.IsDone == true)
+                                    {
+                                        dldr = null;
+                                        break;
+                                    }
+                                }
+                                //TODO 检测
+                                //MultiThreadDownloader md = new MultiThreadDownloader();
+                                //md.GoGoGo(url, 8, Path.GetDirectoryName(path));
                             }
                             else
                             {
-                                MultiThreadDownloader md = new MultiThreadDownloader();
-                                md.GoGoGo(url, 64, Path.GetDirectoryName(path));
+                                dldr = new ThreadDownloader(url, 64, path);
+                                dldr.Download();
+                                while (true)
+                                {
+                                    if (dldr.IsDone == true)
+                                    {
+                                        dldr = null;
+                                        break;
+                                    }
+                                }
+                                //TODO 检测
+                                //MultiThreadDownloader md = new MultiThreadDownloader();
+                                //md.GoGoGo(url, 64, Path.GetDirectoryName(path));
                             }
                         }
                     }
@@ -354,7 +416,7 @@ namespace CoreLaunching
                 stream.Close();
             }
         }
-        string AutoRuledJVMArguments(ObjectTemplates.Root root, string action, MyPlatforms Platform, string arch)
+        string AutoRuledJVMArguments(JsonTemplates.Root root, string action, MyPlatforms Platform, string arch)
         {
             var ELJvmArgumets = string.Empty;
             //拼接有规定的参数
