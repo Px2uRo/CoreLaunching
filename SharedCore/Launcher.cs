@@ -228,13 +228,27 @@ namespace CoreLaunching
             ApiFormatMap = RefreshApiFormatMap();
             foreach (var item in ApiFormatMap)
             {
-                Input = Input.Replace(item.Key, item.Value);
+                if(item.Key.Contains(" ") && item.Key.StartsWith(@"""") != true && item.Key.EndsWith(@"""") != true)
+                {
+                    Input = Input.Replace(item.Key, @""""+item.Value+@"""");
+                }
+                else
+                {
+                    Input = Input.Replace(item.Key, item.Value);
+                }
             }
             if(OtherArguments != null)
             {
                 foreach (var item in OtherArguments)
                 {
-                    Input = Input.Replace(item.Key, item.Value);
+                    if (item.Key.Contains(" ") && item.Key.StartsWith(@"""") != true && item.Key.EndsWith(@"""") != true)
+                    {
+                        Input = Input.Replace(item.Key, @"""" + item.Value + @"""");
+                    }
+                    else
+                    {
+                        Input = Input.Replace(item.Key, item.Value);
+                    }
                 }
             }
             return Input;
@@ -283,7 +297,14 @@ namespace CoreLaunching
             };
             foreach (var item in map)
             {
-                Input = Input.Replace(item.Key,item.Value);
+                if (item.Key.Contains(" ") && item.Key.StartsWith(@"""") != true && item.Key.EndsWith(@"""") != true)
+                {
+                    Input = Input.Replace(item.Key, @"""" + item.Value + @"""");
+                }
+                else
+                {
+                    Input = Input.Replace(item.Key, item.Value);
+                }
             }
             map = null;
             return Input;
