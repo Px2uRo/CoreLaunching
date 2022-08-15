@@ -8,49 +8,48 @@ using Newtonsoft.Json.Linq;
 
 namespace CoreLaunching.JsonTemplates
 {
-    public class HashObjectCoverter : JsonConverter
+    public class AssetsObject
+    {
+        [JsonConverter(typeof(NameHashSizeConvert))]
+        [JsonProperty("objects")]
+        public List<NameHashSize> Objects;
+    }
+
+    public class NameHashSizeConvert : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
             return true;
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
-            var jObject = JObject.Load(reader);
-            var assetObjects = new AssetObject();
-            assetObjects.SizeHashPairList = new List<SizeHashPair>();
-            foreach (var item in jObject)
+            List<NameHashSize> list = new List<NameHashSize>();
+            foreach (var item in (JObject)(JToken.ReadFrom(reader)))
             {
-                var hash = item.Value["hash"].ToString();
-                var size = item.Value["size"].ToObject<long>();
-                assetObjects.SizeHashPairList.Add(new SizeHashPair()
-                {
-                    Hash = hash,
-                    Size = size
-                }); 
+                NameHashSize nhs = new NameHashSize();
+                nhs.Name = item.Key;
+                nhs.Hash = (string)item.Value["hash"];
+                nhs.Size = (int)item.Value["size"];
+                list.Add(nhs);
             }
-            return assetObjects;
+            return list;
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
-            
+
         }
     }
-    [JsonConverter(typeof(HashObjectCoverter))]
-    public class AssetObject
+
+    public class NameHashSize:Object
     {
-        public List<SizeHashPair> SizeHashPairList { get; set; }
-    }
-    public class SizeHashPair
-    {
-        public long Size { get; set; }
-        public string Hash { get; set; }
-    }
-    public class AssetIndexRoot
-    {
-        [JsonProperty("objects")]
-        public AssetObject AssetObject { get; set; }
+        public string Name;
+        public string Hash;
+        public int Size;
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }
