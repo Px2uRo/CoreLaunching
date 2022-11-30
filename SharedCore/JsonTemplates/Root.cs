@@ -193,10 +193,10 @@ namespace CoreLaunching.JsonTemplates
                                 itm.Downloads.Artifact = JsonConvert.DeserializeObject<Artifact>
                                     (job["downloads"]["artifact"].ToString());
                             }
-                            if (job["downloads"]["classifiersJObject"] != null)
+                            if (job["downloads"]["classifiers"] != null)
                             {
                                 var artifactWithPlatform = new ArtifactWithPlatform();
-                                var classifiersJObject = job["downloads"]["classifiersJObject"];
+                                var classifiersJObject = job["downloads"]["classifiers"];
                                 if (classifiersJObject["javadoc"] != null)
                                 {
                                     var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["javadoc"].ToString());
@@ -628,12 +628,11 @@ namespace CoreLaunching.JsonTemplates
         [JsonProperty("artifact")]
         public Artifact Artifact { get; set; }
 
-        [JsonProperty("classifiersJObject")]
+        [JsonProperty("classifiers")]
         public List<ArtifactWithPlatform> Classifiers { get; set; }
 
         public Downloads()
         {
-            Artifact = new Artifact();
             Classifiers = new List<ArtifactWithPlatform>();
         }
     }
@@ -644,7 +643,7 @@ namespace CoreLaunching.JsonTemplates
         public string Sha1 { get; set; }
 
         [JsonProperty("size")]
-        public string Size { get; set; }
+        public int Size { get; set; }
 
         [JsonProperty("url")]
         public string Url { get; set; }
@@ -746,7 +745,7 @@ namespace CoreLaunching.JsonTemplates
         public string Sha1 { get; set; }
 
         [JsonProperty("size")]
-        public string Size { get; set; }
+        public int Size { get; set; }
 
         [JsonProperty("url")]
         public string Url { get; set; }
