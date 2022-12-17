@@ -4,12 +4,24 @@ namespace NewTestCore
 {
     public class Program
     {
+        static Downloader down = new Downloader();
         static void Main(string[] args)
         {
-            HFTC1();
-                int i = 0;
+            new Thread(() =>
+            {
+                down.Download("https://download.visualstudio.microsoft.com/download/pr/35660869-0942-4c5d-8692-6e0d4040137a/4921a36b578d8358dac4c27598519832/dotnet-sdk-7.0.101-win-x64.exe", "I:\\NET70.exe", 32);
+            }).Start();
+            System.Timers.Timer t = new(1000);
+            t.Elapsed += Timer_Elapsed;
+            t.Start();
         }
 
+        private static void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+        {
+            Console.Clear();
+            Console.WriteLine(down.contentleng);
+            Console.WriteLine(down.Downloaded);
+        }
         static void OTC1()
         {
             string FolderName = @"I:\isos\Testing\";
