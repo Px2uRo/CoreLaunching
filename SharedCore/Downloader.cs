@@ -19,6 +19,7 @@ namespace CoreLaunching
         #region EVENT
         public delegate void SpeedChangedEH(object sender);
         public event SpeedChangedEH SpeedChanged;
+        public event SpeedChangedEH Finished;
         #endregion
         public int Downloaded { 
             get {
@@ -167,10 +168,14 @@ namespace CoreLaunching
             fc.Combine(Local, HelperPool);
             while(fc.working)
             {
-                Thread.Sleep(1000);
+                //Thread.Sleep(1000);
             }
             fc.Dispose();
             #endregion
+            if (Finished != null)
+            {
+                Finished.Invoke(this);
+            }
         }
 
         private void Tim_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
