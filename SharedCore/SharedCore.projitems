@@ -9,6 +9,7 @@
     <Import_RootNamespace>SharedCore</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CrashParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Downloader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonTemplates\Root.cs" />
