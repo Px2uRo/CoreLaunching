@@ -102,10 +102,6 @@ namespace CoreLaunching.JsonTemplates
                                                     Allow = false;
                                                 }
                                             }
-                                            else
-                                            {
-
-                                            }
                                         }
                                     }
                                 }
@@ -183,38 +179,39 @@ namespace CoreLaunching.JsonTemplates
                                 ntv.Platform = nativeItem.Key;
                                 ntv.Id = nativeItem.Value.ToString();
                                 itm.Natives.Add(ntv);
-                                ntv = null;
                             }
                         }
                         if (job["downloads"] != null)
                         {
                             if (job["downloads"]["artifact"] != null)
                             {
-                                itm.Downloads.Artifact = JsonConvert.DeserializeObject<Artifact>
-                                    (job["downloads"]["artifact"].ToString());
+                                if (Allow)
+                                {
+                                    itm.Downloads.Artifact = JsonConvert.DeserializeObject<Artifact>(job["downloads"]["artifact"].ToString());
+                                }
                             }
                             if (job["downloads"]["classifiers"] != null)
                             {
                                 var artifactWithPlatform = new ArtifactWithPlatform();
                                 var classifiersJObject = job["downloads"]["classifiers"];
-                                if (classifiersJObject["javadoc"] != null)
-                                {
-                                    var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["javadoc"].ToString());
-                                    artifactWithPlatform.Item = artifact;
-                                    artifact = null;
-                                    artifactWithPlatform.Platform = "javadoc";
-                                    itm.Downloads.Classifiers.Add(artifactWithPlatform);
-                                    artifactWithPlatform = new ArtifactWithPlatform();
-                                }
-                                if (classifiersJObject["sources"] != null)
-                                {
-                                    var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["sources"].ToString());
-                                    artifactWithPlatform.Item = artifact;
-                                    artifact = null;
-                                    artifactWithPlatform.Platform = "sources";
-                                    itm.Downloads.Classifiers.Add(artifactWithPlatform);
-                                    artifactWithPlatform = new ArtifactWithPlatform();
-                                }
+                                //if (classifiersJObject["javadoc"] != null)
+                                //{
+                                //    var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["javadoc"].ToString());
+                                //    artifactWithPlatform.Item = artifact;
+                                //    artifact = null;
+                                //    artifactWithPlatform.Platform = "javadoc";
+                                //    itm.Downloads.Classifiers.Add(artifactWithPlatform);
+                                //    artifactWithPlatform = new ArtifactWithPlatform();
+                                //}
+                                //if (classifiersJObject["sources"] != null)
+                                //{
+                                //    var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["sources"].ToString());
+                                //    artifactWithPlatform.Item = artifact;
+                                //    artifact = null;
+                                //    artifactWithPlatform.Platform = "sources";
+                                //    itm.Downloads.Classifiers.Add(artifactWithPlatform);
+                                //    artifactWithPlatform = new ArtifactWithPlatform();
+                                //}
                                 switch (System.Environment.OSVersion.Platform)
                                 {
                                     case PlatformID.Win32S:
@@ -242,7 +239,7 @@ namespace CoreLaunching.JsonTemplates
                                             itm.Downloads.Classifiers.Add(artifactWithPlatform);
                                             artifactWithPlatform = new ArtifactWithPlatform();
                                         }
-                                        if (classifiersJObject["natives-windows-32"] != null && System.Environment.Is64BitOperatingSystem == true)
+                                        if (classifiersJObject["natives-windows-32"] != null && System.Environment.Is64BitOperatingSystem == false)
                                         {
                                             var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["natives-windows-32"].ToString());
                                             artifactWithPlatform.Item = artifact;
@@ -275,7 +272,6 @@ namespace CoreLaunching.JsonTemplates
                         }
                         ret.Add(itm);
                     }
-                    itm = null;
                 }
                 return ret;
             }
@@ -761,7 +757,6 @@ namespace CoreLaunching.JsonTemplates
     {
         public string Platform { get; set; }
         public string Id { get; set; }
-
     }
 
     public class Extract

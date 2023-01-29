@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.IO.Compression;
 
 #if NET4_0
 using pkg= System.IO.Packaging;
-#elif NET4_5_2||NET6_0
+#elif NET4_5_2 || NET6_0
 using comp = System.IO.Compression;
 #endif
 namespace CoreLaunching
@@ -49,11 +50,24 @@ namespace CoreLaunching
 #elif NET6_0
         public static void Export(string ZipFilePath, string DirName)
         {
-            comp.ZipFile.ExtractToDirectory(ZipFilePath, DirName);
+            Export(ZipFilePath, DirName, false);
         }
         public static void Export(string ZipFilePath, string DirName, bool OverWrite)
         {
-            comp.ZipFile.ExtractToDirectory(DirName, ZipFilePath,OverWrite);
+            using (var str = File.OpenRead(ZipFilePath))
+            {
+                using (var zipf = new comp.ZipArchive(str))
+                {
+                    foreach (var entry in zipf.Entries)
+                    {
+                        if (entry.Name.EndsWith(".dll"))
+                        {
+                            entry.ExtractToFile(Path.Combine(DirName, entry.Name), OverWrite);
+                        }
+                    }
+                }
+                str.Close();
+            }
         }
 #endif
     }
