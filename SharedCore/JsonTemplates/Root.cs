@@ -270,6 +270,22 @@ namespace CoreLaunching.JsonTemplates
 
                             }
                         }
+                        else if (itm.Name.Contains("optifine"))
+                        {
+                            var pathr = itm.Name.Replace(":", "/");
+                            var name = string.Empty;
+                            if (pathr.Contains("launchwrapper-of"))
+                            {
+                                name = Path.GetFileName(pathr) + ".jar";
+                                name = $"launchwrapper-of-{name}";
+                            }
+                            else if(itm.Name.Contains("OptiFine:"))
+                            {
+                                name = (itm.Name.Replace(":", "-") + ".jar").Replace("optifine-", string.Empty); ;
+                            }
+                            itm.Downloads.Artifact = new();
+                            itm.Downloads.Artifact.Path = $"{pathr}/{name}";
+                        }
                         ret.Add(itm);
                     }
                 }
