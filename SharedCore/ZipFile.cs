@@ -62,6 +62,10 @@ namespace CoreLaunching
                     {
                         if (entry.Name.EndsWith(".dll"))
                         {
+                            if(!OverWrite&&File.Exists(Path.Combine(DirName, entry.Name)))
+                            {
+                                return;
+                            }
                             entry.ExtractToFile(Path.Combine(DirName, entry.Name), OverWrite);
                         }
                     }

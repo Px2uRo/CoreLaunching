@@ -11,6 +11,15 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CrashParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Downloader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Downloader\Helpers\FileHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\Attributes\HasChildren.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\DownloadFile.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\DownloadItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\DownloadListener.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\DownloadQueue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\DownloadRange.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\DownloadURI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\HttpHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonTemplates\Root.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Launcher.cs" />

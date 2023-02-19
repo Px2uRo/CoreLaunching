@@ -1,11 +1,30 @@
 ﻿using CoreLaunching;
+using CoreLaunching.Down.Helpers;
+using CoreLaunching.Down.Web;
 
 namespace NewTestCore
 {
     public class Program
     {
-        static Downloader down = new Downloader();
+        //static Downloader down = new Downloader();
+
         static void Main(string[] args)
+        {
+            List<DownloadURI> urls = new List<DownloadURI>();
+            urls.Add(new("https://download.visualstudio.microsoft.com/download/pr/4a725ea4-cd2c-4383-9b63-263156d5f042/d973777b32563272b85617105a06d272/dotnet-sdk-6.0.406-win-x64.exe", "I:\\HelloFanbal\\net60.iso"));
+            urls.Add(new("https://download.visualstudio.microsoft.com/download/pr/dcf6b6e2-824d-4cae-9f05-1b81b4ccbace/dd620dd4b95bb3534d0ebf53babc968b/dotnet-sdk-7.0.200-win-x64.exe", "I:\\HelloFanbal\\net70.exe"));
+            new DownloadQueue(urls.ToArray()).Download();
+            Console.ReadLine();
+        }
+
+        private static void Downloadfile_OnTaskCompleted(object? sender, EventArgs e)
+        {
+            var file = sender as DownloadFile;
+            FanFileHelper.StartProcessAndSelectFile(file.Source.LocalPath);
+
+        }
+
+        static void OTC4(string[] args)
         {
             new Thread(() =>
             {

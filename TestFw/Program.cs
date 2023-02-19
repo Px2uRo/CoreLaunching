@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using CoreLaunching;
+using CoreLaunching.Down.Helpers;
+using CoreLaunching.Down.Web;
 
 namespace TestFw
 {
@@ -12,7 +14,18 @@ namespace TestFw
     {
         static void Main(string[] args)
         {
-            OTC();
+            var downloadfile = DownloadFile.LoadTest();
+            downloadfile.OnTaskCompleted += Downloadfile_OnTaskCompleted;
+            downloadfile.Download(true);
+            downloadfile.WaitDownload();
+            Console.ReadLine();
+        }
+
+        private static void Downloadfile_OnTaskCompleted(object sender, EventArgs e)
+        {
+            var file = sender as DownloadFile;
+            FanFileHelper.StartProcessAndSelectFile(file.Source.LocalPath);
+
         }
         /// <summary>
         /// NET4.5.2解压测试
