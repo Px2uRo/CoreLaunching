@@ -13,6 +13,8 @@ namespace CoreLaunching.Down.Web;
 public class DownloadQueue
 {
     private Semaphore _semaphore = new(16, 64);
+
+    public event EventHandler<DownloadFile> ItemsUpdated;
     // TODO 准备列表。
     public Queue<DownloadFile> ReadyList = new();
     // TODO 失败列表。
@@ -27,7 +29,7 @@ public class DownloadQueue
 
     public DownloadQueue(IEnumerable<DownloadURI> urls) : this(GetDownloadFiles(urls))
     {
-
+        
     }
 
     public DownloadQueue(DownloadFile[] files)
@@ -70,6 +72,7 @@ public class DownloadQueue
             FailedList.Enqueue(temp);
         }
         _semaphore.Release(1);
+        ItemsUpdated.Invoke(this,temp);
     }
 
     private static DownloadFile[] GetDownloadFiles(IEnumerable<DownloadURI> urls)
@@ -81,7 +84,7 @@ public class DownloadQueue
         }
         return res.ToArray();   
     }
-    public void Download()
+    public async void Download()
     {
         while (ReadyList.Count!=0)
         {
@@ -90,5 +93,5 @@ public class DownloadQueue
             file.Download();
         }
     }
-#endregion
+    #endregion
 }

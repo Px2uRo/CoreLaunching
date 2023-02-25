@@ -153,6 +153,7 @@ namespace CoreLaunching.Down.Web
                     await DownloadSingle(false);
                 }
 
+                OnTaskCompleted?.Invoke(this,new EventArgs());
             }
             catch (Exception)
             {
