@@ -171,45 +171,44 @@ namespace CoreLaunching.Down.Web
         ///<summary>下载多项。</summary>
         private async Task DownloadCombineParts(long contentLength, long partSize)
         {
-
+            State = DownloadFileState.Downloading;
             var task = new Task(() =>
             {
-                State = DownloadFileState.Downloading;
-                var buffer = new byte[contentLength];
-                var partCount = contentLength / partSize; // 是否为整除，如果不是整除则补上余数段。
-                partCount += contentLength % partSize == 0 ? 0 : 1;
-                var hasRest = contentLength % partSize != 0;
+            var buffer = new byte[contentLength];
+            var partCount = contentLength / partSize; // 是否为整除，如果不是整除则补上余数段。
+            partCount += contentLength % partSize == 0 ? 0 : 1;
+            var hasRest = contentLength % partSize != 0;
 
-                var ranges = new ContentRange[partCount];
-                for (int i = 0; i < partCount; i++) { ranges[i] = new ContentRange() { Offset = i * partSize, Length = partSize }; }
-                if (hasRest) ranges[partCount - 1].Length = contentLength - (partCount - 1) * partSize;
+            var ranges = new ContentRange[partCount];
+            for (int i = 0; i < partCount; i++) { ranges[i] = new ContentRange() { Offset = i * partSize, Length = partSize }; }
+            if (hasRest) ranges[partCount - 1].Length = contentLength - (partCount - 1) * partSize;
 
-                var po = new ParallelOptions();
-                po.CancellationToken = _cancelSource.Token;
-                try
-                {
-                    //foreach (var r in ranges)
-                    //{
-                    //    DownloadToBuffer(buffer, r.Offset, r.Length);
-                    //}
-                    Parallel.ForEach(ranges, po, r => DownloadToBuffer(buffer, r.Offset, r.Length));
-                    State = DownloadFileState.DownloadSucessed;
-                    OnTaskCompleted?.Invoke(this, EventArgs.Empty);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"下载失败{Source.RemoteUri}，{ex.Message}");
-                    State = DownloadFileState.DownloadFailed;
-                    ErrorInfo = ex.Message;
-                    OnDownloadFailed?.Invoke(this, ErrorInfo);
-                    OnTaskCompleted?.Invoke(this, EventArgs.Empty);
-                }
+            var po = new ParallelOptions();
+            po.CancellationToken = _cancelSource.Token;
+            try
+            {
+                //foreach (var r in ranges)
+                //{
+                //    DownloadToBuffer(buffer, r.Offset, r.Length);
+                //}
+                Parallel.ForEach(ranges, po, r => DownloadToBuffer(buffer, r.Offset, r.Length));
+                State = DownloadFileState.DownloadSucessed;
+                OnTaskCompleted?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"下载失败{Source.RemoteUri}，{ex.Message}");
+                State = DownloadFileState.DownloadFailed;
+                ErrorInfo = ex.Message;
+                OnDownloadFailed?.Invoke(this, ErrorInfo);
+                OnTaskCompleted?.Invoke(this, EventArgs.Empty);
+            }
 
-                //Console.WriteLine(HttpHelper.GetBufferInfo(buffer, (int)ranges.Last().Offset));
-
+            //Console.WriteLine(HttpHelper.GetBufferInfo(buffer, (int)ranges.Last().Offset));
+                Directory.CreateDirectory(Path.GetDirectoryName(Source.LocalPath));
                 using (var fs = new FileStream(Source.LocalPath, FileMode.Create))
                 {
-                    fs.Write(buffer,0,(int)fs.Length);
+                    fs.Write(buffer,0,buffer.Length);
                 }
 
                 var nbuffer = File.ReadAllBytes(Source.LocalPath);

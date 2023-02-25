@@ -72,7 +72,7 @@ public class DownloadQueue
             FailedList.Enqueue(temp);
         }
         _semaphore.Release(1);
-        ItemsUpdated.Invoke(this,temp);
+        ItemsUpdated?.Invoke(this,temp);
     }
 
     private static DownloadFile[] GetDownloadFiles(IEnumerable<DownloadURI> urls)

@@ -7,13 +7,16 @@ namespace NewTestCore
     public class Program
     {
         //static Downloader down = new Downloader();
-
-        static void Main(string[] args)
+        
+        static  void Main(string[] args)
         {
-            List<DownloadURI> urls = new List<DownloadURI>();
-            urls.Add(new("https://download.visualstudio.microsoft.com/download/pr/4a725ea4-cd2c-4383-9b63-263156d5f042/d973777b32563272b85617105a06d272/dotnet-sdk-6.0.406-win-x64.exe", "I:\\HelloFanbal\\net60.iso"));
-            urls.Add(new("https://download.visualstudio.microsoft.com/download/pr/dcf6b6e2-824d-4cae-9f05-1b81b4ccbace/dd620dd4b95bb3534d0ebf53babc968b/dotnet-sdk-7.0.200-win-x64.exe", "I:\\HelloFanbal\\net70.exe"));
-            new DownloadQueue(urls.ToArray()).Download();
+            //List<DownloadURI> urls = new List<DownloadURI>();
+            //urls.Add(new("https://bmclapi2.bangbang93.com/version/1.19.2/client", "I:\\WhatTheHell\\clt.jar"));
+            //new DownloadQueue(urls.ToArray()).Download();
+            var df = new DownloadFile(new("https://bmclapi2.bangbang93.com/version/1.19.2/client", "I:\\WhatTheHell\\clt.jar"));
+            df.Download();
+            df.WaitDownload();
+            Console.WriteLine("三天之内杀了你");
             Console.ReadLine();
         }
 
@@ -28,7 +31,7 @@ namespace NewTestCore
         {
             new Thread(() =>
             {
-                down.Download("https://download.visualstudio.microsoft.com/download/pr/35660869-0942-4c5d-8692-6e0d4040137a/4921a36b578d8358dac4c27598519832/dotnet-sdk-7.0.101-win-x64.exe", "I:\\NET70.exe", 32);
+                //down.Download("https://download.visualstudio.microsoft.com/download/pr/35660869-0942-4c5d-8692-6e0d4040137a/4921a36b578d8358dac4c27598519832/dotnet-sdk-7.0.101-win-x64.exe", "I:\\NET70.exe", 32);
             }).Start();
             System.Timers.Timer t = new(1000);
             t.Elapsed += Timer_Elapsed;
@@ -38,8 +41,8 @@ namespace NewTestCore
         private static void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
             Console.Clear();
-            Console.WriteLine(down.contentleng);
-            Console.WriteLine(down.Downloaded);
+            //Console.WriteLine(down.contentleng);
+            //Console.WriteLine(down.Downloaded);
         }
         static void OTC1()
         {
