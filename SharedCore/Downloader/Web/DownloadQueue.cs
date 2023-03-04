@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,9 +13,11 @@ namespace CoreLaunching.Down.Web;
 ///<summary>下载队列。</summary>
 public class DownloadQueue
 {
-    private Semaphore _semaphore = new(16, 64);
+    private int sema_counter = 64;
+    private Semaphore _semaphore = new(64, 64);
 
     public event EventHandler<DownloadFile> ItemsUpdated;
+    public event EventHandler<string> ItemFailed;
     // TODO 准备列表。
     public Queue<DownloadFile> ReadyList = new();
     // TODO 失败列表。
@@ -37,6 +40,7 @@ public class DownloadQueue
         foreach (var file in files)
         {
             file.OnTaskCompleted += File_OnTaskCompleted;
+            file.OnDownloadFailed += File_OnDownloadFailed;
             if (file.State == DownloadFileState.Idle || file.State == DownloadFileState.Canceled)
             {
                 ReadyList.Enqueue(file);
@@ -57,8 +61,13 @@ public class DownloadQueue
     }
 
 
-#endregion
-#region methods
+
+    #endregion
+    #region methods
+    private void File_OnDownloadFailed(object? sender, string e)
+    {
+        ItemFailed?.Invoke(sender,e);
+    }
 
     private void File_OnTaskCompleted(object? sender, EventArgs e)
     {
@@ -72,6 +81,7 @@ public class DownloadQueue
             FailedList.Enqueue(temp);
         }
         _semaphore.Release(1);
+        Debug.WriteLine(++sema_counter);
         ItemsUpdated?.Invoke(this,temp);
     }
 
@@ -86,11 +96,14 @@ public class DownloadQueue
     }
     public async void Download()
     {
+        ThreadPool.SetMinThreads(64, 64);
+        
         while (ReadyList.Count!=0)
         {
             _semaphore.WaitOne();
             var file = ReadyList.Dequeue();
             file.Download();
+            Debug.WriteLine(--sema_counter);
         }
     }
     #endregion

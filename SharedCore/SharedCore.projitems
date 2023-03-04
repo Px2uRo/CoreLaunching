@@ -9,7 +9,7 @@
     <Import_RootNamespace>SharedCore</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)CrashParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\Xiong%27s\CoreLaunching\SharedCore\Parser\CrashParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Downloader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Downloader\Helpers\FileHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\Attributes\HasChildren.cs" />
@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Launcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonTemplates\AssetIndexRoot.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonTemplates\MSAuthResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parser\MapParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StringListCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ZipFile.cs" />
   </ItemGroup>

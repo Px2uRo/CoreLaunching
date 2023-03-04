@@ -115,9 +115,11 @@ namespace CoreLaunching.Down.Web
         [JsonIgnore]
         public bool IsFileLengthCorrect => ContentLength == _tempDownloadingLengthForPausedLength;
 
-#endregion
+        public int ThreadInt { get; private set; }
 
-#region ctors
+        #endregion
+
+        #region ctors
 
         public DownloadFile(DownloadURI source)
         {
@@ -131,7 +133,7 @@ namespace CoreLaunching.Down.Web
 
 #region methods
 
-        public async Task Download(bool isContinue = false)
+        public void Download(bool isContinue = false)
         {
             try
             {
@@ -146,19 +148,18 @@ namespace CoreLaunching.Down.Web
 
                 if (ContentLength > MaxRange)
                 {
-                    await DownloadCombineParts(ContentLength);
+                    DownloadCombinePartsButThreads(ContentLength);
                 }
                 else
                 {
-                    await DownloadSingle(false);
+                    DownloadSingleButThread(false);
                 }
 
-                OnTaskCompleted?.Invoke(this,new EventArgs());
+                //OnTaskCompleted?.Invoke(this,new EventArgs());
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                OnDownloadFailed?.Invoke(this,ex.Message);
             }
         }
 
@@ -167,7 +168,66 @@ namespace CoreLaunching.Down.Web
         {
             await DownloadCombineParts(contentLength, MaxRange); // 1MB区域
         }
+        private void DownloadCombinePartsButThreads(long contentLength) 
+        {
+            DownloadCombinePartsButThreads(contentLength, MaxRange);
+        }
+        private void DownloadCombinePartsButThreads(long contentLength,long partSize)
+        {
+            State = DownloadFileState.Downloading;
+            var task = new Thread(() =>
+            {
+                var buffer = new byte[contentLength];
+                var partCount = contentLength / partSize; // 是否为整除，如果不是整除则补上余数段。
+                partCount += contentLength % partSize == 0 ? 0 : 1;
+                var hasRest = contentLength % partSize != 0;
+                ThreadInt = (int)partCount;
+                var ranges = new ContentRange[partCount];
+                for (int i = 0; i < partCount; i++) { ranges[i] = new ContentRange() { Offset = i * partSize, Length = partSize }; }
+                if (hasRest) ranges[partCount - 1].Length = contentLength - (partCount - 1) * partSize;
 
+                var po = new ParallelOptions();
+                po.CancellationToken = _cancelSource.Token;
+                try
+                {
+                    //foreach (var r in ranges)
+                    //{
+                    //    DownloadToBuffer(buffer, r.Offset, r.Length);
+                    //}
+                    Parallel.ForEach(ranges, po, r => DownloadToBuffer(buffer, r.Offset, r.Length));
+                    State = DownloadFileState.DownloadSucessed;
+                    OnTaskCompleted?.Invoke(this, EventArgs.Empty);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"下载失败{Source.RemoteUri}，{ex.Message}");
+                    State = DownloadFileState.DownloadFailed;
+                    ErrorInfo = ex.Message;
+                    OnDownloadFailed?.Invoke(this, ErrorInfo);
+                    OnTaskCompleted?.Invoke(this, EventArgs.Empty);
+                }
+
+                //Console.WriteLine(HttpHelper.GetBufferInfo(buffer, (int)ranges.Last().Offset));
+                Directory.CreateDirectory(Path.GetDirectoryName(Source.LocalPath));
+                using (var fs = new FileStream(Source.LocalPath, FileMode.Create))
+                {
+                    fs.Write(buffer, 0, buffer.Length);
+                }
+
+                var nbuffer = File.ReadAllBytes(Source.LocalPath);
+                //Console.WriteLine(HttpHelper.GetBufferInfo(nbuffer, (int)ranges.Last().Offset));
+#if NET6_0
+                Task.Delay(1000).ContinueWith((o) => { GC.Collect(); });
+#else
+                new Thread(() => { 
+                Thread.Sleep(1000);
+                    GC.Collect();
+                }).Start();
+#endif
+
+            });
+            task.Start();
+        }
         ///<summary>下载多项。</summary>
         private async Task DownloadCombineParts(long contentLength, long partSize)
         {
@@ -233,7 +293,88 @@ namespace CoreLaunching.Down.Web
         {
             HttpHelper.GetContentByPart(buffer, Source.RemoteUri, rangeStart, rangeStart + rangeLen - 1);
         }
+        
+        public void DownloadSingleButThread(bool isContinue = false)
+        {
+            State = DownloadFileState.Downloading;
+            DownloadCounter++;
+            this.ThreadInt = 1;
+            var task = new Thread( () =>
+            {
+                try
+                {
+                    var httpRequest = WebRequest.Create(Source.RemoteUri) as HttpWebRequest;
+                    httpRequest.Method = "GET";
+                    httpRequest.ContentType = "application/x-www-form-urlencoded";
+                    httpRequest.AddRange(0);
+                    // 设置断点续传的信息。
+                    if (isContinue)
+                    {
+                        httpRequest.Headers.Add("Range", $"{_tempDownloadingLengthForPausedLength}-");
+                    }
 
+                    httpRequest.Timeout = 30000; // 半分钟。
+                    var httpResponse = httpRequest.GetResponse();
+
+                    ContentLength = httpResponse.ContentLength;
+
+                    using (var stream = httpResponse.GetResponseStream())
+                    {
+                        var parentRoot = Path.GetDirectoryName(Source.LocalPath);
+                        Helpers.FanFileHelper.CreateFolder(parentRoot);
+                        if (isContinue)
+                        {
+                            using (FileStream fs = new FileStream(Source.LocalPath, FileMode.Append))
+                            {
+                                fs.Seek(_tempDownloadingLengthForPausedLength, SeekOrigin.Begin);
+#if NET6_0
+                                stream.CopyToAsync(fs, _cancelSource.Token);
+#else
+                                stream.CopyTo(fs);
+#endif
+                                _tempDownloadingLengthForPausedLength = fs.Length;
+                            }
+                        }
+                        else
+                        {
+                            using (FileStream fs = new FileStream(Source.LocalPath, FileMode.Create))
+                            {
+#if NET6_0
+                                stream.CopyToAsync(fs, _cancelSource.Token);
+#else
+                                stream.CopyTo(fs);
+#endif
+                                _tempDownloadingLengthForPausedLength = fs.Length;
+                            }
+                        }
+
+                    }
+
+                    State = DownloadFileState.DownloadSucessed;
+                    OnTaskCompleted?.Invoke(this, EventArgs.Empty);
+
+
+                }
+                catch (TaskCanceledException cancelex)
+                {
+                    Debug.WriteLine($"下载取消");
+                    State = DownloadFileState.Canceled;
+                    OnDownloadFailed?.Invoke(this, ErrorInfo);
+                    OnTaskCompleted?.Invoke(this, EventArgs.Empty);
+                }
+                catch (Exception ex)
+                {
+
+                    Debug.WriteLine($"下载失败{Source.RemoteUri}，{ex.Message}");
+                    State = DownloadFileState.DownloadFailed;
+                    ErrorInfo = ex.Message;
+                    OnDownloadFailed?.Invoke(this, ErrorInfo);
+                    OnTaskCompleted?.Invoke(this, EventArgs.Empty);
+                }
+
+            });
+            task.Start();
+        }
         ///<summary>下载任务。</summary>
         public Task DownloadSingle(bool isContinue = false)
         {
