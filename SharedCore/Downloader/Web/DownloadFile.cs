@@ -148,11 +148,11 @@ namespace CoreLaunching.Down.Web
 
                 if (ContentLength > MaxRange)
                 {
-                    DownloadCombinePartsButThreads(ContentLength);
+                    DownloadCombineParts(ContentLength);
                 }
                 else
                 {
-                    DownloadSingleButThread(false);
+                    DownloadSingle(false);
                 }
 
                 //OnTaskCompleted?.Invoke(this,new EventArgs());
