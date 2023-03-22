@@ -1,14 +1,26 @@
 ﻿using CoreLaunching;
 using CoreLaunching.Down.Helpers;
 using CoreLaunching.Down.Web;
+using CoreLaunching.MicrosoftAuth;
+using Microsoft.Identity.Client;
+using System;
 
 namespace NewTestCore
 {
     public class Program
     {
         //static Downloader down = new Downloader();
-        
-        static  void Main(string[] args)
+
+
+        static async Task Main(string[] args)
+        {
+            var res = MSAuthAccount.GetInfoWithRefreshTokenFromRefreshToken(token);
+            Console.WriteLine(res.RefreshToken);
+        }
+    
+
+    
+        static  void OTC4(string[] args)
         {
             //List<DownloadURI> urls = new List<DownloadURI>();
             //urls.Add(new("https://bmclapi2.bangbang93.com/version/1.19.2/client", "I:\\WhatTheHell\\clt.jar"));
@@ -27,7 +39,7 @@ namespace NewTestCore
 
         }
 
-        static void OTC4(string[] args)
+        static void OTC5(string[] args)
         {
             new Thread(() =>
             {

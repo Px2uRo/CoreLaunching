@@ -23,13 +23,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestFw", "TestFw\TestFw.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreLaunchingNetFw452", "CoreLaunchingFw452\CoreLaunchingFw452\CoreLaunchingNetFw452.csproj", "{A98F00B4-191B-4401-B986-B3E8A5F10605}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MSADemo", "MSADemo\MSADemo.csproj", "{2FD2C588-456F-41E1-8C47-E733223A72D4}"
+EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		SharedCore\SharedCore.projitems*{0b5ff277-f018-41ba-b45e-49cd97bcda02}*SharedItemsImports = 4
-		SharedCore\SharedCore.projitems*{36373f45-6727-41e6-b060-58c52262df09}*SharedItemsImports = 5
-		SharedCore\SharedCore.projitems*{a98f00b4-191b-4401-b986-b3e8a5f10605}*SharedItemsImports = 4
-		SharedCore\SharedCore.projitems*{e2a9f52b-6053-4004-9d43-aa972d0da2cf}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|arm64 = Debug|arm64
@@ -185,11 +181,33 @@ Global
 		{A98F00B4-191B-4401-B986-B3E8A5F10605}.Release|x64.Build.0 = Release|Any CPU
 		{A98F00B4-191B-4401-B986-B3E8A5F10605}.Release|x86.ActiveCfg = Release|Any CPU
 		{A98F00B4-191B-4401-B986-B3E8A5F10605}.Release|x86.Build.0 = Release|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Debug|arm64.Build.0 = Debug|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Debug|x64.Build.0 = Debug|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Debug|x86.Build.0 = Debug|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Release|arm64.ActiveCfg = Release|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Release|arm64.Build.0 = Release|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Release|x64.ActiveCfg = Release|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Release|x64.Build.0 = Release|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Release|x86.ActiveCfg = Release|Any CPU
+		{2FD2C588-456F-41E1-8C47-E733223A72D4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1245A063-F447-4D99-912F-8226F3F99565}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		SharedCore\SharedCore.projitems*{0b5ff277-f018-41ba-b45e-49cd97bcda02}*SharedItemsImports = 4
+		SharedCore\SharedCore.projitems*{36373f45-6727-41e6-b060-58c52262df09}*SharedItemsImports = 5
+		SharedCore\SharedCore.projitems*{a98f00b4-191b-4401-b986-b3e8a5f10605}*SharedItemsImports = 4
+		SharedCore\SharedCore.projitems*{e2a9f52b-6053-4004-9d43-aa972d0da2cf}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

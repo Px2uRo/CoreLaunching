@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CoreLaunching.JsonTemplates
+namespace CoreLaunching.MicrosoftAuth
 {
     public class MSAuthResponse
     {
@@ -100,7 +100,7 @@ namespace CoreLaunching.JsonTemplates
 
     }
 
-    public class PlayerInfo
+    public class MSAPlayerInfo
     {
         [JsonProperty("id")]
         public string Id { get; set; }
@@ -115,6 +115,23 @@ namespace CoreLaunching.JsonTemplates
         public List<Capes> Capes { get; set; }
 
         public string AccessToken { get; set; }
+    }
+    public class MSAPlayerInfoWithRefreshToken
+    {
+        [JsonProperty("id")]
+        public string Id { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("skins")]
+        public List<Skins> Skins { get; set; }
+
+        [JsonProperty("capes")]
+        public List<Capes> Capes { get; set; }
+
+        public string AccessToken { get; set; }
+        public string RefreshToken { get; set; }
     }
 
     public class Skins

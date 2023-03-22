@@ -62,12 +62,12 @@ namespace CoreLaunching
                     {
                         if (entry.Name.EndsWith(".dll"))
                         {
-                            Directory.CreateDirectory(Path.Combine(DirName, entry.Name));
                             if(!OverWrite&&File.Exists(Path.Combine(DirName, entry.Name)))
                             {
                                 return;
                             }
-                            entry.ExtractToFile(Path.Combine(DirName, entry.Name), OverWrite);
+                            var path = Path.Combine(DirName, entry.Name);
+                            entry.ExtractToFile(path, OverWrite);
                         }
                     }
                 }
