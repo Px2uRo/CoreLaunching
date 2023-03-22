@@ -48,10 +48,48 @@ namespace CoreLaunching.MicrosoftAuth
             Stream dataStream3 = request3.GetRequestStream();
             dataStream3.Write(byteArray3, 0, byteArray3.Length);
             dataStream3.Close();
-            WebResponse response3 = request3.GetResponse();
-            dataStream3 = response3.GetResponseStream();
-            StreamReader reader3 = new StreamReader(dataStream3);
-            responseFromServer = reader3.ReadToEnd();
+            try
+            {
+                WebResponse response3 = request3.GetResponse();
+                dataStream3 = response3.GetResponseStream();
+                StreamReader reader3 = new StreamReader(dataStream3);
+                responseFromServer = reader3.ReadToEnd();
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("2148916233"))
+                {
+                    return new() { HasError = true, ErrorInfo = "该微软账号尚未购买 Minecraft Java 版，或尚未注册 XBox 账户。", ErrorCode = "2148916233" };
+                }
+                else if(ex.Message.Contains("2148916235"))
+                {
+                    return new() { HasError = true, 
+                        ErrorInfo = "该帐户来自 Xbox Live 不可用/被禁止 的 国家(或地区)",
+                    ErrorCode= "2148916235"};
+                }
+                else if (ex.Message.Contains("2148916236") || ex.Message.Contains("2148916237"))
+                {
+                    return new()
+                    {
+                        HasError = true,
+                        ErrorInfo = "该帐户需要在 Xbox 页面上进行成人验证",
+                        ErrorCode = "2148916235"
+                    };  
+                }
+                else if (ex.Message.Contains("2148916238"))
+                {
+                    return new()
+                    {
+                        HasError = true,
+                        ErrorInfo = "该帐户是儿童（未满 18 岁），除非该帐户由成人添加到家庭，否则无法继续。",
+                        ErrorCode = "2148916238"
+                    };
+                }
+                else
+                {
+                    return new() { HasError = true};
+                }
+            }
             var XSTSRoot = JsonConvert.DeserializeObject<XBLResponse>(responseFromServer);
             #endregion
             #region 登录 Minecraft
@@ -97,7 +135,11 @@ namespace CoreLaunching.MicrosoftAuth
             }
             else
             {
-                return null;
+                return new()
+                {
+                    HasError = true,
+                    ErrorInfo = "此账号不拥有Minecraft"
+                };
             }
             #endregion
         }

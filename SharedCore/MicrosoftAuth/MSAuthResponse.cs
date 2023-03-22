@@ -132,6 +132,9 @@ namespace CoreLaunching.MicrosoftAuth
 
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
+        public bool HasError { get; set; }
+        public string ErrorInfo { get; set; }
+        public string ErrorCode { get; set; }
     }
 
     public class Skins

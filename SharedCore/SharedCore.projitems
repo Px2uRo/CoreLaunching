@@ -6,7 +6,7 @@
     <SharedGUID>e2a9f52b-6053-4004-9d43-aa972d0da2cf</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>SharedCore</Import_RootNamespace>
+    <Import_RootNamespace>MEFL.CLAddIn</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\..\..\Xiong%27s\CoreLaunching\SharedCore\Parser\CrashParser.cs" />
