@@ -1,21 +1,12 @@
 ﻿using System.Text;
-using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using System.Net;
-using static Microsoft.Graph.Constants;
 
 namespace CoreLaunching.MicrosoftAuth
 {
     public class MSAuthAccount
     {
         #region 常用的
-        private const string _clientId = "328557da-2a39-4e7b-b0ee-7595406faba6";
-        private const string _authority = "https://login.microsoftonline.com/consumers";
-        private static IPublicClientApplication app = PublicClientApplicationBuilder.Create(_clientId)
-                                                    .WithAuthority(_authority)
-                                                    .WithDefaultRedirectUri()
-                                                    .Build();
-        private static string[] scopes = new[] { "xboxlive.signin" };
         public static string MinecraftAppUrl = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?prompt=login&client_id=00000000402b5328&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL&redirect_uri=https:%2F%2Flogin.live.com%2Foauth20_desktop.srf";
         #endregion
         private static MSAPlayerInfoWithRefreshToken GetInfoFromToken(string token)
@@ -201,66 +192,5 @@ namespace CoreLaunching.MicrosoftAuth
             var res = GetInfoFromToken(token);
             res.RefreshToken = ref_token;
             return res;
-        }
-        public static async Task<string> GetNewTokenAsync()
-        {
-            var result = await AcquireToken(app, scopes, false);
-            return result.AccessToken;
-        }
-        private static async Task<AuthenticationResult> AcquireToken(IPublicClientApplication app, string[] scopes, bool useEmbaddedView)
-        {
-            AuthenticationResult result;
-            try
-            {
-                var accounts = await app.GetAccountsAsync();
-
-                // Try to acquire an access token from the cache. If an interaction is required, 
-                // MsalUiRequiredException will be thrown.
-                result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
-                            .ExecuteAsync();
-            }
-            catch (MsalUiRequiredException)
-            {
-                // Acquiring an access token interactively. MSAL will cache it so we can use AcquireTokenSilent
-                // on future calls.
-                result = await app.AcquireTokenInteractive(scopes)
-                            .WithUseEmbeddedWebView(useEmbaddedView)
-                            .ExecuteAsync();
-            }
-
-            return result;
-        }
-        public static async Task<MSAPlayerInfoWithRefreshToken> SinginNewAsync()
-        {
-            return GetInfoFromToken(await GetNewTokenAsync());
-        }
-        public static async Task<MSAPlayerInfoWithRefreshToken> GetInfoFromCacheAsync()
-        {
-            AuthenticationResult result;
-            try
-            {
-                var accounts = await app.GetAccountsAsync();
-
-                // Try to acquire an access token from the cache. If an interaction is required, 
-                // MsalUiRequiredException will be thrown.
-                result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
-                            .ExecuteAsync();
-            }
-            catch (MsalUiRequiredException)
-            {
-                // Acquiring an access token interactively. MSAL will cache it so we can use AcquireTokenSilent
-                // on future calls.
-                result = await app.AcquireTokenInteractive(scopes)
-                            .WithUseEmbeddedWebView(true)
-                            .ExecuteAsync();
-            }
-            return GetInfoFromToken(result.AccessToken);
-        }
-        public static async Task<MSAPlayerInfoWithRefreshToken> GetInfoFromAccountAsync(IAccount account)
-        {
-            var result = await app.AcquireTokenSilent(scopes, account)
-                            .ExecuteAsync();
-            return GetInfoFromToken(result.AccessToken);
-        }
-    }
+        }    }
 }

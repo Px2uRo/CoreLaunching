@@ -11,8 +11,6 @@
   <Import Project="..\SharedCore\SharedCore.projitems" Label="Shared" />
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Graph" Version="5.2.0" />
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.51.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
   </ItemGroup>
