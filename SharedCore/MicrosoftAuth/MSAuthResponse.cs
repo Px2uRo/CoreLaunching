@@ -31,7 +31,7 @@ namespace CoreLaunching.MicrosoftAuth
             public string Foci { get; set; }
     }
 
-    class XBLResponse
+    public class XBLResponse
     {
         [JsonProperty("IssueInstant")]
         public string IssueInstant { get; set; }
@@ -47,14 +47,14 @@ namespace CoreLaunching.MicrosoftAuth
 
     }
 
-    class DisplayClaims
+    public class DisplayClaims
     {
         [JsonProperty("xui")]
         public List<Xui> Xui { get; set; }
 
     }
 
-    class Xui
+    public class Xui
     {
         [JsonProperty("uhs")]
         public string Uhs { get; set; }
@@ -109,7 +109,7 @@ namespace CoreLaunching.MicrosoftAuth
         public string Name { get; set; }
 
         [JsonProperty("skins")]
-        public List<Skins> Skins { get; set; }
+        public List<Skin> Skins { get; set; }
 
         [JsonProperty("capes")]
         public List<Capes> Capes { get; set; }
@@ -125,7 +125,7 @@ namespace CoreLaunching.MicrosoftAuth
         public string Name { get; set; }
 
         [JsonProperty("skins")]
-        public List<Skins> Skins { get; set; }
+        public List<Skin> Skins { get; set; }
 
         [JsonProperty("capes")]
         public List<Capes> Capes { get; set; }
@@ -137,7 +137,7 @@ namespace CoreLaunching.MicrosoftAuth
         public string ErrorCode { get; set; }
     }
 
-    public class Skins
+    public class Skin
     {
 
         [JsonProperty("id")]

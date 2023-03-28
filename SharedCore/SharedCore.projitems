@@ -28,6 +28,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)MicrosoftAuth\MSAuthAccount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\FileRepairer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\MapParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PinKcatDownloader\MCFileInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PinKcatDownloader\MutilFileDownloadProcess.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PinKcatDownloader\MutilFileDownloaManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PinKcatDownloader\Parser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PinKcatDownloader\ProcessManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PinKcatDownloader\SingleFileDownloadProgress.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PinKcatDownloader\SuperSmallProcessManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StringListCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ZipFile.cs" />
   </ItemGroup>
