@@ -22,6 +22,8 @@ namespace CoreLaunching.JsonTemplates
     }
     public class Root
     {
+        [JsonProperty("inheritsFrom")]
+        public string InheritsFrom { get; set; }
         [JsonProperty("arguments")]
         public Arguments Arguments { get; set; }
 

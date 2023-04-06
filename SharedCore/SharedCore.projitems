@@ -6,10 +6,11 @@
     <SharedGUID>e2a9f52b-6053-4004-9d43-aa972d0da2cf</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>MEFL.CLAddIn</Import_RootNamespace>
+    <Import_RootNamespace>CoreLaunching</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\..\..\Xiong%27s\CoreLaunching\SharedCore\Parser\CrashParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\Xiong%27s\CoreLaunching\SharedCore\Forge\BMCLForgeHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Downloader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Downloader\Helpers\FileHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\Attributes\HasChildren.cs" />
@@ -20,6 +21,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\DownloadRange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\DownloadURI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Downloader\Web\HttpHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Forge\ForgeParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Forge\WebForgeInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonTemplates\Root.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Launcher.cs" />

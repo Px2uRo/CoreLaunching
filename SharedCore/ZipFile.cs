@@ -48,13 +48,71 @@ namespace CoreLaunching
             }
         }
 #elif NET6_0
-        public static void Export(string ZipFilePath, string DirName)
+        public static string[] GetItems(string zipFilePath)
         {
-            Export(ZipFilePath, DirName, false);
+            var lst = new List<string>();
+            using (var str = File.OpenRead(zipFilePath))
+            {
+                using (var zipf = new comp.ZipArchive(str))
+                {
+                    foreach (var entry in zipf.Entries)
+                    {
+                        lst.Add(entry.FullName);
+                    }
+                }
+            }
+            return lst.ToArray();
         }
-        public static void Export(string ZipFilePath, string DirName, bool OverWrite)
+        public static string[] GetItems(Stream stream)
         {
-            using (var str = File.OpenRead(ZipFilePath))
+            var lst = new List<string>();
+                using (var zipf = new comp.ZipArchive(stream))
+                {
+                    foreach (var entry in zipf.Entries)
+                    {
+                        lst.Add(entry.FullName);
+                    }
+            }
+            return lst.ToArray();
+        }
+        public static byte[] GetSubFileData(string subFileName, string zipFilePath)
+        {
+            var fs = File.Open(zipFilePath,FileMode.Open);
+            using (var zipf = new comp.ZipArchive(fs))
+            {
+                var itm = zipf.Entries.Where((x) => x.Name == subFileName).ToArray()[0];
+                using (var stm = itm.Open())
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        stm.CopyTo(ms);
+                        return ms.ToArray();
+                    }
+                }
+            }
+        }
+        public static byte[] GetSubFileData(string subFileName, Stream stream)
+        {
+            using (var zipf = new comp.ZipArchive(stream))
+            {
+                var itm = zipf.Entries.Where((x) => x.Name == subFileName).ToArray()[0];
+                using (var stm = itm.Open())
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        stm.CopyTo(ms);
+                        return ms.ToArray();
+                    }
+                }
+            }
+        }
+        public static void Export(string zipFilePath, string dirName)
+        {
+            Export(zipFilePath, dirName, false);
+        }
+        public static void Export(string zipFilePath, string DirName, bool overrite)
+        {
+            using (var str = File.OpenRead(zipFilePath))
             {
                 using (var zipf = new comp.ZipArchive(str))
                 {
@@ -62,12 +120,12 @@ namespace CoreLaunching
                     {
                         if (entry.Name.EndsWith(".dll"))
                         {
-                            if(!OverWrite&&File.Exists(Path.Combine(DirName, entry.Name)))
+                            if(!overrite&&File.Exists(Path.Combine(DirName, entry.Name)))
                             {
                                 return;
                             }
                             var path = Path.Combine(DirName, entry.Name);
-                            entry.ExtractToFile(path, OverWrite);
+                            entry.ExtractToFile(path, overrite);
                         }
                     }
                 }

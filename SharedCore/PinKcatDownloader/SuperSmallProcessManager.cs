@@ -42,6 +42,7 @@ namespace CoreLaunching.PinKcatDownloader
         public long MaxBytes = 2500000;
         private long RunningBytes = 0;
         public event EventHandler QueueEmpty;
+        public event EventHandler ManagerEmpty;
         public void DownloadSingle()
         {
             Queue<MCFileInfo> queue = new();
@@ -67,6 +68,7 @@ namespace CoreLaunching.PinKcatDownloader
                 }
                 Thread.Sleep(200);
             }
+            ManagerEmpty?.Invoke(this,new());
         }
         public event EventHandler<MCFileInfo> OneFinished;
         public long AllLengthGetted { get; set; }

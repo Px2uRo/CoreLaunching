@@ -7,17 +7,54 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
-using System.Drawing;
 
 namespace CoreLaunching.PinKcatDownloader
 {
     public class Parser
     {
-        public const string VersionInfo = "https://download.mcbbs.net/mc/game/version_manifest.json";
-        public const string AssetsSource = "https://download.mcbbs.net/assets";
-        public const string librarySource = "https://download.mcbbs.net/maven/";
+        private string _versionInfo = "https://download.mcbbs.net/mc/game/version_manifest.json";
 
-        public static MCFileInfo[] ParseFromJson(string contentOrPath,ParseType type,string dotMCFolder,string customVersionName,bool removeLocal)
+        public string VersionInfo
+        {
+            get { return _versionInfo; }
+            set {
+                if (value.EndsWith("/")){
+                    value = value.Substring(0, value.Length - 1);
+                }
+                _versionInfo = value
+                    ; }
+        }
+        private string _assetsSource = "https://download.mcbbs.net/assets";
+
+        public string AssetsSource
+        {
+            get { return _assetsSource; }
+            set {
+                if (value.EndsWith("/"))
+                {
+                    value = value.Substring(0, value.Length - 1);
+                }
+                _assetsSource = value;
+            }
+        }
+
+        private string _librarySource = "https://download.mcbbs.net/maven/";
+
+        public string LibrarySource
+        {
+            get { return _librarySource; }
+            set
+            {
+                if (!value.EndsWith("/"))
+                {
+                    value += "/";
+                }
+                _librarySource = value; 
+            }
+        }
+
+
+        public MCFileInfo[] ParseFromJson(string contentOrPath,ParseType type,string dotMCFolder,string customVersionName,bool removeLocal)
         {
             List<MCFileInfo> res = new();
             Root root= null;
@@ -44,7 +81,15 @@ namespace CoreLaunching.PinKcatDownloader
             {
                 #region Client
                 var cltinf = root.Downloads.Client;
-                var clturl = $"https://download.mcbbs.net/version/{root.Id}/client";
+                var clturl = string.Empty;
+                if(root.InheritsFrom != null) 
+                {
+                    clturl = $"https://download.mcbbs.net/version/{root.InheritsFrom}/client";
+                }
+                else
+                {
+                    clturl = $"https://download.mcbbs.net/version/{root.Id}/client";
+                }
                 #region Redirect
                 HttpWebRequest req = (HttpWebRequest)WebRequest.Create(clturl);
                 req.Method = "HEAD";
@@ -54,26 +99,63 @@ namespace CoreLaunching.PinKcatDownloader
                     clturl = "https://download.mcbbs.net" + response.Headers["Location"];
                 }
                 #endregion
-                res.Add(new("client", cltinf.Sha1, cltinf.Size, clturl, Path.Combine(dotMCFolder, "versions",customVersionName, $"{customVersionName}.jar")));
+                var cltlocal = Path.Combine(dotMCFolder, "versions", customVersionName, $"{customVersionName}.jar");
+                if (removeLocal)
+                {
+                    if (!File.Exists(cltlocal))
+                    {
+                        res.Add(new("client", cltinf.Sha1, cltinf.Size, clturl, cltlocal));
+                    }
+                }
+                else{
+                    res.Add(new("client", cltinf.Sha1, cltinf.Size, clturl, cltlocal));
+                }
                 #endregion
                 using (var clt = new WebClient())
                 {
-                    var Assets = JsonConvert.DeserializeObject<AssetsObject>(clt.DownloadString(root.AssetIndex.Url));
+                    var strin = clt.DownloadString(root.AssetIndex.Url);
+                    var indLocal = Path.Combine(dotMCFolder, "assets\\indexes",Path.GetFileName(root.AssetIndex.Url));
+                    Directory.CreateDirectory(Path.GetDirectoryName(indLocal));
+                    File.Create(indLocal).Close();
+                    File.WriteAllText(indLocal,strin);
+                    var Assets = JsonConvert.DeserializeObject<AssetsObject>(strin);
                     foreach (var item in Assets.Objects)
                     {
-                        res.Add(new(item,AssetsSource,dotMCFolder));
+                        var addOne = new MCFileInfo(item, AssetsSource, dotMCFolder);
+                        if (removeLocal)
+                        {
+                            if (!File.Exists(addOne.Local))
+                            {
+                                res.Add(addOne);
+                            }
+                        }
+                        else
+                        {
+                            res.Add(addOne);
+                        }
                     }
                 }
                 foreach (var item in root.Libraries)
                 {
                     if (item.Downloads.Artifact != null)
                     {
-                        var native = item.Downloads.Artifact.Url.Replace("https://libraries.minecraft.net/",librarySource);
+                        var native = item.Downloads.Artifact.Url.Replace("https://libraries.minecraft.net/",LibrarySource);
+                        native = item.Downloads.Artifact.Url.Replace("https://maven.minecraftforge.net/", LibrarySource);
                         var local = Path.Combine(dotMCFolder, "libraries", item.Downloads.Artifact.Path.Replace("/", "\\"));
                         var size = item.Downloads.Artifact.Size;
                         var name = item.Name;
                         var sha1 = item.Downloads.Artifact.Sha1;
-                        res.Add(new(name,sha1,size,native,local));
+                        if (removeLocal)
+                        {
+                            if (!File.Exists(local))
+                            {
+                                res.Add(new(name, sha1, size, native, local));
+                            }
+                        }
+                        else
+                        {
+                            res.Add(new(name, sha1, size, native, local));
+                        }
                     }
                     if (item.Downloads.Classifiers != null)
                     {
@@ -85,27 +167,29 @@ namespace CoreLaunching.PinKcatDownloader
                             var classlocal = Path.Combine(dotMCFolder, "libraries", classifier.Item.Path.Replace("/", "\\"));
                             var size = classifier.Item.Size;
                             var sha1 = classifier.Item.Sha1;
-                            res.Add(new(name, sha1, size, classnative, classlocal)); ;
+                            if (removeLocal)
+                            {
+                                if (!File.Exists(classlocal))
+                                {
+                                    res.Add(new(name, sha1, size, classnative, classlocal));
+                                }
+                            }
+                            else
+                            {
+                                res.Add(new(name, sha1, size, classnative, classlocal));
+                            }
                         }
                     }
                 }
             }
-            if (removeLocal)
-            {
-                var Lq = res.Where(x => File.Exists(x.Local)).ToArray();
-                foreach (var item in Lq)
-                {
-                    res.Remove(item);
-                }
-            }
             return res.ToArray();
         }
+    }
 
-        public enum ParseType
-        {
-            FilePath,
-            Json,
-            NativeUrl
-        }
+    public enum ParseType
+    {
+        FilePath,
+        Json,
+        NativeUrl
     }
 }

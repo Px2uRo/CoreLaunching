@@ -1,9 +1,10 @@
 ﻿using CoreLaunching;
 using CoreLaunching.Down.Helpers;
 using CoreLaunching.Down.Web;
+using CoreLaunching.Forge;
 using CoreLaunching.MicrosoftAuth;
-using Microsoft.Identity.Client;
 using System;
+using System.Net;
 
 namespace NewTestCore
 {
@@ -12,10 +13,18 @@ namespace NewTestCore
         //static Downloader down = new Downloader();
 
 
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
-            var res = MSAuthAccount.GetInfoWithRefreshTokenFromRefreshToken(token);
-            Console.WriteLine(res.RefreshToken);
+            var forge = BMCLForgeHelper.GetDownloadUrlsFromMcVersion("1.19.3");
+            var wf = forge[0];
+            var build = BMCLForgeHelper.GetDownloadUrlFromBuild(wf.Build);
+            var forgeContent = new ForgeParser().GetVersionContentFromInstaller(build,true);
+            using (var clt = new WebClient())
+            {
+                var mcContent = clt.DownloadString("https://piston-meta.mojang.com/v1/packages/c4f1eefc74d080ab4f7673eb0b2a9c0532cb0d6f/1.19.4.json");
+                var res = ForgeParser.CombineJson(mcContent,forgeContent,CoreLaunching.PinKcatDownloader.ParseType.Json);
+                Console.WriteLine(res);
+            }
         }
     
 

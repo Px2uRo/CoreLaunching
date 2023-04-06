@@ -38,9 +38,16 @@ namespace CoreLaunching.PinKcatDownloader
                     using (var stream = response.GetResponseStream())
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(LocalTempPath));
-                        using (var fstream = File.Create(LocalTempPath))
+                        try
                         {
-                            stream.CopyTo(fstream);
+                            using (var fstream = File.Create(LocalTempPath))
+                            {
+                                stream.CopyTo(fstream);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            IsOK = true;
                         }
                     }
                     IsOK = true;

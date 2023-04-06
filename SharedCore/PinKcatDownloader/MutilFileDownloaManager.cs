@@ -44,6 +44,7 @@ namespace CoreLaunching.PinKcatDownloader
             Infos= infos;
         }
         public event EventHandler QueueEmpty;
+        public event EventHandler ManagerEmpty;
         public void Download(string tempRoot)
         {
             Queue<MCFileInfo> queue = new();
@@ -69,6 +70,11 @@ namespace CoreLaunching.PinKcatDownloader
                 }
                 Thread.Sleep(500);
             }
+            while (Count > 0)
+            {
+
+            }
+            ManagerEmpty?.Invoke(this, new());
         }
 
         public EventHandler<MCFileInfo> OneFinished;
