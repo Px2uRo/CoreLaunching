@@ -20,6 +20,266 @@ namespace CoreLaunching.JsonTemplates
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
+
+    public class LibrariesArrayItemConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return true;
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            List<LibrariesArrayItem> ret = new List<LibrariesArrayItem>();
+            foreach (var item in JToken.ReadFrom(reader))
+            {
+                LibrariesArrayItem itm = new LibrariesArrayItem();
+                var job = (JObject)item;
+                var Allow = false;
+                if (job["rules"] != null)
+                {
+                    try
+                    {
+                        foreach (var rule in job["rules"])
+                        {
+                            if (rule["action"].ToString() == "allow")
+                            {
+                                if (rule["os"] == null)
+                                {
+                                    Allow = true;
+                                }
+                                else
+                                {
+                                    if (rule["os"].HasValues)
+                                    {
+                                        if (rule["os"]["name"] != null)
+                                        {
+                                            if (rule["os"]["name"].ToString() == "windows" && Environment.OSVersion.Platform == PlatformID.Win32NT)
+                                            {
+                                                Allow = true;
+                                            }
+                                            else
+                                            {
+                                                Allow = false;
+                                            }
+                                        }
+                                        if (rule["os"]["version"] != null)
+                                        {
+                                            if (rule["os"]["version"].ToString() == "^10\\." && Environment.OSVersion.Version.Major >= 10)
+                                            {
+                                                Allow = true;
+                                            }
+                                            else
+                                            {
+                                                Allow = false;
+                                            }
+                                        }
+                                        if (rule["os"]["arch"] != null)
+                                        {
+                                            if (rule["os"]["arch"].ToString() == "x86" && Environment.Is64BitOperatingSystem == false)
+                                            {
+                                                Allow = true;
+                                            }
+                                            else
+                                            {
+                                                Allow = false;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (rule["action"].ToString() == "disallow")
+                            {
+                                if (rule["os"] == null)
+                                {
+                                    Allow = false;
+                                }
+                                else
+                                {
+                                    if (rule["os"].HasValues)
+                                    {
+                                        if (rule["os"]["name"] != null)
+                                        {
+                                            if (rule["os"]["name"].ToString() == "windows" && Environment.OSVersion.Platform == PlatformID.Win32NT)
+                                            {
+                                                Allow = false;
+                                            }
+                                            else
+                                            {
+                                                Allow = true;
+                                            }
+                                        }
+                                        if (rule["os"]["version"] != null)
+                                        {
+                                            if (rule["os"]["version"].ToString() == "^10\\" && Environment.OSVersion.Version.Major >= 10)
+                                            {
+                                                Allow = false;
+                                            }
+                                            else
+                                            {
+                                                Allow = true;
+                                            }
+                                        }
+                                        if (rule["os"]["arch"] != null)
+                                        {
+                                            if (rule["os"]["arch"].ToString() == "x86" && Environment.Is64BitOperatingSystem == false)
+                                            {
+                                                Allow = false;
+                                            }
+                                            else
+                                            {
+                                                Allow = true;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //todo 提上 CL 日程？或者 MEFL 日程？
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Allow = false;
+                    }
+                }
+                else
+                {
+                    Allow = true;
+                }
+                if (Allow)
+                {
+                    itm.Natives = new List<Natives>();
+                    itm.Downloads = new Downloads();
+                    itm.Name = job["name"].ToString();
+                    if (job["natives"] != null)
+                    {
+                        foreach (var nativeItem in (JObject)job["natives"])
+                        {
+                            Natives ntv = new Natives();
+                            ntv.Platform = nativeItem.Key;
+                            ntv.Id = nativeItem.Value.ToString();
+                            itm.Natives.Add(ntv);
+                        }
+                    }
+                    if (job["downloads"] != null)
+                    {
+                        if (job["downloads"]["artifact"] != null)
+                        {
+                            if (Allow)
+                            {
+                                itm.Downloads.Artifact = JsonConvert.DeserializeObject<Artifact>(job["downloads"]["artifact"].ToString());
+                            }
+                        }
+                        if (job["downloads"]["classifiers"] != null)
+                        {
+                            var artifactWithPlatform = new ArtifactWithPlatform();
+                            var classifiersJObject = job["downloads"]["classifiers"];
+                            //if (classifiersJObject["javadoc"] != null)
+                            //{
+                            //    var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["javadoc"].ToString());
+                            //    artifactWithPlatform.Item = artifact;
+                            //    artifact = null;
+                            //    artifactWithPlatform.Platform = "javadoc";
+                            //    itm.Downloads.Classifiers.Add(artifactWithPlatform);
+                            //    artifactWithPlatform = new ArtifactWithPlatform();
+                            //}
+                            //if (classifiersJObject["sources"] != null)
+                            //{
+                            //    var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["sources"].ToString());
+                            //    artifactWithPlatform.Item = artifact;
+                            //    artifact = null;
+                            //    artifactWithPlatform.Platform = "sources";
+                            //    itm.Downloads.Classifiers.Add(artifactWithPlatform);
+                            //    artifactWithPlatform = new ArtifactWithPlatform();
+                            //}
+                            switch (System.Environment.OSVersion.Platform)
+                            {
+                                case PlatformID.Win32S:
+                                    throw new UnSpportException("不支持 Win32S 操作系统");
+                                    break;
+                                case PlatformID.Win32Windows:
+                                    throw new UnSpportException("不支持 Win32Windows 操作系统");
+                                    break;
+                                case PlatformID.Win32NT:
+                                    if (classifiersJObject["natives-windows"] != null)
+                                    {
+                                        var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["natives-windows"].ToString());
+                                        artifactWithPlatform.Item = artifact;
+                                        artifact = null;
+                                        artifactWithPlatform.Platform = "natives-windows";
+                                        itm.Downloads.Classifiers.Add(artifactWithPlatform);
+                                        artifactWithPlatform = new ArtifactWithPlatform();
+                                    }
+                                    if (classifiersJObject["natives-windows-64"] != null && System.Environment.Is64BitOperatingSystem == true)
+                                    {
+                                        var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["natives-windows-64"].ToString());
+                                        artifactWithPlatform.Item = artifact;
+                                        artifact = null;
+                                        artifactWithPlatform.Platform = "natives-windows-64";
+                                        itm.Downloads.Classifiers.Add(artifactWithPlatform);
+                                        artifactWithPlatform = new ArtifactWithPlatform();
+                                    }
+                                    if (classifiersJObject["natives-windows-32"] != null && System.Environment.Is64BitOperatingSystem == false)
+                                    {
+                                        var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["natives-windows-32"].ToString());
+                                        artifactWithPlatform.Item = artifact;
+                                        artifact = null;
+                                        artifactWithPlatform.Platform = "natives-windows-32";
+                                        itm.Downloads.Classifiers.Add(artifactWithPlatform);
+                                        artifactWithPlatform = new ArtifactWithPlatform();
+                                    }
+                                    break;
+                                case PlatformID.WinCE:
+                                    throw new UnSpportException("不支持 WinCE 操作系统");
+                                    break;
+                                case PlatformID.Unix:
+                                    throw new UnSpportException("不支持 Unix 操作系统");
+                                    break;
+                                case PlatformID.Xbox:
+                                    throw new UnSpportException("不支持 Xbox 操作系统");
+                                    break;
+                                case PlatformID.MacOSX:
+                                    throw new UnSpportException("不支持 MacOSX 操作系统");
+                                    break;
+#if NET6_0
+                                case PlatformID.Other:
+                                    throw new UnSpportException("不支持 Other 操作系统");
+                                    break;
+#endif
+                            }
+
+                        }
+                    }
+                    else if (itm.Name.Contains("optifine"))
+                    {
+                        var pathr = itm.Name.Replace(":", "/");
+                        var name = string.Empty;
+                        if (pathr.Contains("launchwrapper-of"))
+                        {
+                            name = Path.GetFileName(pathr) + ".jar";
+                            name = $"launchwrapper-of-{name}";
+                        }
+                        else if (itm.Name.Contains("OptiFine:"))
+                        {
+                            name = (itm.Name.Replace(":", "-") + ".jar").Replace("optifine-", string.Empty); ;
+                        }
+                        itm.Downloads.Artifact = new();
+                        itm.Downloads.Artifact.Path = $"{pathr}/{name}";
+                    }
+                    ret.Add(itm);
+                }
+            }
+            return ret;
+        }
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+
+        }
+    }
+
     public class Root
     {
         [JsonProperty("inheritsFrom")]
@@ -40,264 +300,6 @@ namespace CoreLaunching.JsonTemplates
         [JsonConverter(typeof(LibrariesArrayItemConverter))]
         public List<LibrariesArrayItem> Libraries { get; set; }
 
-        public class LibrariesArrayItemConverter : JsonConverter
-        {
-            public override bool CanConvert(Type objectType)
-            {
-                return true;
-            }
-
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-            {
-                List<LibrariesArrayItem> ret = new List<LibrariesArrayItem>();
-                foreach (var item in JToken.ReadFrom(reader))
-                {
-                    LibrariesArrayItem itm = new LibrariesArrayItem();
-                    var job = (JObject)item;
-                    var Allow = false;
-                    if (job["rules"] != null)
-                    {
-                        try
-                        {
-                            foreach (var rule in job["rules"])
-                            {
-                                if (rule["action"].ToString() == "allow")
-                                {
-                                    if (rule["os"] == null)
-                                    {
-                                        Allow = true;
-                                    }
-                                    else
-                                    {
-                                        if (rule["os"].HasValues)
-                                        {
-                                            if (rule["os"]["name"] != null)
-                                            {
-                                                if (rule["os"]["name"].ToString() == "windows" && Environment.OSVersion.Platform == PlatformID.Win32NT)
-                                                {
-                                                    Allow = true;
-                                                }
-                                                else
-                                                {
-                                                    Allow = false;
-                                                }
-                                            }
-                                            if (rule["os"]["version"] != null)
-                                            {
-                                                if (rule["os"]["version"].ToString() == "^10\\." && Environment.OSVersion.Version.Major >= 10)
-                                                {
-                                                    Allow = true;
-                                                }
-                                                else
-                                                {
-                                                    Allow = false;
-                                                }
-                                            }
-                                            if (rule["os"]["arch"] != null)
-                                            {
-                                                if (rule["os"]["arch"].ToString() == "x86" && Environment.Is64BitOperatingSystem == false)
-                                                {
-                                                    Allow = true;
-                                                }
-                                                else
-                                                {
-                                                    Allow = false;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                else if (rule["action"].ToString() == "disallow")
-                                {
-                                    if (rule["os"] == null)
-                                    {
-                                        Allow = false;
-                                    }
-                                    else
-                                    {
-                                        if (rule["os"].HasValues)
-                                        {
-                                            if (rule["os"]["name"] != null)
-                                            {
-                                                if (rule["os"]["name"].ToString() == "windows" && Environment.OSVersion.Platform == PlatformID.Win32NT)
-                                                {
-                                                    Allow = false;
-                                                }
-                                                else
-                                                {
-                                                    Allow = true;
-                                                }
-                                            }
-                                            if (rule["os"]["version"] != null)
-                                            {
-                                                if (rule["os"]["version"].ToString() == "^10\\" && Environment.OSVersion.Version.Major >= 10)
-                                                {
-                                                    Allow = false;
-                                                }
-                                                else
-                                                {
-                                                    Allow = true;
-                                                }
-                                            }
-                                            if (rule["os"]["arch"] != null)
-                                            {
-                                                if (rule["os"]["arch"].ToString() == "x86" && Environment.Is64BitOperatingSystem == false)
-                                                {
-                                                    Allow = false;
-                                                }
-                                                else
-                                                {
-                                                    Allow = true;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                //todo 提上 CL 日程？或者 MEFL 日程？
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Allow = false;
-                        }
-                    }
-                    else
-                    {
-                        Allow = true;
-                    }
-                    if (Allow)
-                    {
-                        itm.Natives = new List<Natives>();
-                        itm.Downloads = new Downloads();
-                        itm.Name = job["name"].ToString();
-                        if (job["natives"] != null)
-                        {
-                            foreach (var nativeItem in (JObject)job["natives"])
-                            {
-                                Natives ntv = new Natives();
-                                ntv.Platform = nativeItem.Key;
-                                ntv.Id = nativeItem.Value.ToString();
-                                itm.Natives.Add(ntv);
-                            }
-                        }
-                        if (job["downloads"] != null)
-                        {
-                            if (job["downloads"]["artifact"] != null)
-                            {
-                                if (Allow)
-                                {
-                                    itm.Downloads.Artifact = JsonConvert.DeserializeObject<Artifact>(job["downloads"]["artifact"].ToString());
-                                }
-                            }
-                            if (job["downloads"]["classifiers"] != null)
-                            {
-                                var artifactWithPlatform = new ArtifactWithPlatform();
-                                var classifiersJObject = job["downloads"]["classifiers"];
-                                //if (classifiersJObject["javadoc"] != null)
-                                //{
-                                //    var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["javadoc"].ToString());
-                                //    artifactWithPlatform.Item = artifact;
-                                //    artifact = null;
-                                //    artifactWithPlatform.Platform = "javadoc";
-                                //    itm.Downloads.Classifiers.Add(artifactWithPlatform);
-                                //    artifactWithPlatform = new ArtifactWithPlatform();
-                                //}
-                                //if (classifiersJObject["sources"] != null)
-                                //{
-                                //    var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["sources"].ToString());
-                                //    artifactWithPlatform.Item = artifact;
-                                //    artifact = null;
-                                //    artifactWithPlatform.Platform = "sources";
-                                //    itm.Downloads.Classifiers.Add(artifactWithPlatform);
-                                //    artifactWithPlatform = new ArtifactWithPlatform();
-                                //}
-                                switch (System.Environment.OSVersion.Platform)
-                                {
-                                    case PlatformID.Win32S:
-                                        throw new UnSpportException("不支持 Win32S 操作系统");
-                                        break;
-                                    case PlatformID.Win32Windows:
-                                        throw new UnSpportException("不支持 Win32Windows 操作系统");
-                                        break;
-                                    case PlatformID.Win32NT:
-                                        if (classifiersJObject["natives-windows"] != null)
-                                        {
-                                            var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["natives-windows"].ToString());
-                                            artifactWithPlatform.Item = artifact;
-                                            artifact = null;
-                                            artifactWithPlatform.Platform = "natives-windows";
-                                            itm.Downloads.Classifiers.Add(artifactWithPlatform);
-                                            artifactWithPlatform = new ArtifactWithPlatform();
-                                        }
-                                        if (classifiersJObject["natives-windows-64"] != null && System.Environment.Is64BitOperatingSystem == true)
-                                        {
-                                            var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["natives-windows-64"].ToString());
-                                            artifactWithPlatform.Item = artifact;
-                                            artifact = null;
-                                            artifactWithPlatform.Platform = "natives-windows-64";
-                                            itm.Downloads.Classifiers.Add(artifactWithPlatform);
-                                            artifactWithPlatform = new ArtifactWithPlatform();
-                                        }
-                                        if (classifiersJObject["natives-windows-32"] != null && System.Environment.Is64BitOperatingSystem == false)
-                                        {
-                                            var artifact = JsonConvert.DeserializeObject<Artifact>(classifiersJObject["natives-windows-32"].ToString());
-                                            artifactWithPlatform.Item = artifact;
-                                            artifact = null;
-                                            artifactWithPlatform.Platform = "natives-windows-32";
-                                            itm.Downloads.Classifiers.Add(artifactWithPlatform);
-                                            artifactWithPlatform = new ArtifactWithPlatform();
-                                        }
-                                        break;
-                                    case PlatformID.WinCE:
-                                        throw new UnSpportException("不支持 WinCE 操作系统");
-                                        break;
-                                    case PlatformID.Unix:
-                                        throw new UnSpportException("不支持 Unix 操作系统");
-                                        break;
-                                    case PlatformID.Xbox:
-                                        throw new UnSpportException("不支持 Xbox 操作系统");
-                                        break;
-                                    case PlatformID.MacOSX:
-                                        throw new UnSpportException("不支持 MacOSX 操作系统");
-                                        break;
-#if NET6_0
-                                    case PlatformID.Other:
-                                        throw new UnSpportException("不支持 Other 操作系统");
-                                        break;
-#endif
-                                }
-
-                            }
-                        }
-                        else if (itm.Name.Contains("optifine"))
-                        {
-                            var pathr = itm.Name.Replace(":", "/");
-                            var name = string.Empty;
-                            if (pathr.Contains("launchwrapper-of"))
-                            {
-                                name = Path.GetFileName(pathr) + ".jar";
-                                name = $"launchwrapper-of-{name}";
-                            }
-                            else if(itm.Name.Contains("OptiFine:"))
-                            {
-                                name = (itm.Name.Replace(":", "-") + ".jar").Replace("optifine-", string.Empty); ;
-                            }
-                            itm.Downloads.Artifact = new();
-                            itm.Downloads.Artifact.Path = $"{pathr}/{name}";
-                        }
-                        ret.Add(itm);
-                    }
-                }
-                return ret;
-            }
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-            {
-                
-            }
-        }
 
         public Logging Logging { get; set; }
         public string MainClass { get; set; }

@@ -1,5 +1,4 @@
-﻿using CoreLaunching.Down.Web;
-using CoreLaunching.JsonTemplates;
+﻿using CoreLaunching.JsonTemplates;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

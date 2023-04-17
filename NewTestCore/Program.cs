@@ -1,8 +1,8 @@
 ﻿using CoreLaunching;
-using CoreLaunching.Down.Helpers;
-using CoreLaunching.Down.Web;
 using CoreLaunching.Forge;
+using CoreLaunching.JsonTemplates;
 using CoreLaunching.MicrosoftAuth;
+using Newtonsoft.Json;
 using System;
 using System.Net;
 
@@ -15,37 +15,25 @@ namespace NewTestCore
 
         static void Main(string[] args)
         {
-            var forge = BMCLForgeHelper.GetDownloadUrlsFromMcVersion("1.19.3");
-            var wf = forge[0];
-            var build = BMCLForgeHelper.GetDownloadUrlFromBuild(wf.Build);
-            var forgeContent = new ForgeParser().GetVersionContentFromInstaller(build,true);
-            using (var clt = new WebClient())
+            var prf = JsonConvert.DeserializeObject<InstallProfile>(System.IO.File.ReadAllText(@"C:\Users\Lenovo\Downloads\forge-1.19.3-44.0.1-installer\install_profile.json"));
+            var datab = prf.Data;
+            datab.Add("{SIDE}", new ClientAndServerPair("client", "server"));
+            var pr1 = prf.Processors.Where((x) => x.IsForClient).ToArray()[0]
+                .GetProcess(
+                "C:\\Program Files\\Microsoft\\jdk-17.0.2.8-hotspot\\bin\\java.exe", 
+                "I:\\Xiong's\\WPF\\ForgeInstallerTest\\ForgeInstallerTest\\bin\\Debug\\net7.0\\.minecraft\\libraries",datab);
+            pr1.OutputDataReceived += Pr1_OutputDataReceived;
+            pr1.Start();
+            pr1.BeginOutputReadLine();
+            while (!pr1.HasExited)
             {
-                var mcContent = clt.DownloadString("https://piston-meta.mojang.com/v1/packages/c4f1eefc74d080ab4f7673eb0b2a9c0532cb0d6f/1.19.4.json");
-                var res = ForgeParser.CombineJson(mcContent,forgeContent,CoreLaunching.PinKcatDownloader.ParseType.Json);
-                Console.WriteLine(res);
+
             }
         }
-    
 
-    
-        static  void OTC4(string[] args)
+        private static void Pr1_OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
-            //List<DownloadURI> urls = new List<DownloadURI>();
-            //urls.Add(new("https://bmclapi2.bangbang93.com/version/1.19.2/client", "I:\\WhatTheHell\\clt.jar"));
-            //new DownloadQueue(urls.ToArray()).Download();
-            var df = new DownloadFile(new("https://bmclapi2.bangbang93.com/version/1.19.2/client", "I:\\WhatTheHell\\clt.jar"));
-            df.Download();
-            df.WaitDownload();
-            Console.WriteLine("三天之内杀了你");
-            Console.ReadLine();
-        }
-
-        private static void Downloadfile_OnTaskCompleted(object? sender, EventArgs e)
-        {
-            var file = sender as DownloadFile;
-            FanFileHelper.StartProcessAndSelectFile(file.Source.LocalPath);
-
+            Console.WriteLine(e.Data);
         }
 
         static void OTC5(string[] args)
