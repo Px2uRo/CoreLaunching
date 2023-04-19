@@ -82,6 +82,28 @@ namespace CoreLaunching.Forge
                 return File.ReadAllText(path);
             }
         }
+        public static string GetInstallProfileContentFromInstaller(string path, bool isUrl)
+        {
+            if (isUrl)
+            {
+                #region Redirect
+                HttpWebRequest req = (HttpWebRequest)WebRequest.Create(path);
+                req.Method = "GET";
+                using (WebResponse response = req.GetResponse())
+                {
+                    using (var stream = response.GetResponseStream())
+                    {
+                        var data = ZipFile.GetSubFileData("install_profile.json", stream);
+                        return Encoding.UTF8.GetString(data);
+                    }
+                }
+                #endregion
+            }
+            else
+            {
+                return File.ReadAllText(path);
+            }
+        }
         public MCFileInfo[] ParseFromInstaller(string path, bool isUrl,string dotMCFolder,bool removeLocal = true)
         {
             List<MCFileInfo> lst = new List<MCFileInfo>();
@@ -163,19 +185,19 @@ namespace CoreLaunching.Forge
             }
             return res.ToArray();
         }
-    
-        public static string CombineJson(string mcJson,string forgeJson,ParseType type)
+
+        public static string CombineVersionJson(string mcJson, string forgeJson, ParseType type)
         {
             JObject mcJsonObject;
             JObject forgeJsonObject;
-            if(type== ParseType.Json)
+            if (type == ParseType.Json)
             {
-                mcJsonObject=JObject.Parse(mcJson);
-                forgeJsonObject=JObject.Parse(forgeJson);
+                mcJsonObject = JObject.Parse(mcJson);
+                forgeJsonObject = JObject.Parse(forgeJson);
             }
-            else if(type== ParseType.FilePath)
+            else if (type == ParseType.FilePath)
             {
-                mcJsonObject = JObject.Parse(File.ReadAllText(mcJson)) ;
+                mcJsonObject = JObject.Parse(File.ReadAllText(mcJson));
                 forgeJsonObject = JObject.Parse(File.ReadAllText(forgeJson));
             }
             else
@@ -183,27 +205,59 @@ namespace CoreLaunching.Forge
                 using (var clt = new WebClient())
                 {
                     mcJsonObject = JObject.Parse(clt.DownloadString(mcJson));
-                    forgeJsonObject = JObject.Parse(clt.DownloadString(mcJson));
+                    forgeJsonObject = JObject.Parse(clt.DownloadString(forgeJson));
                 }
             }
-            foreach (var item in forgeJsonObject["arguments"]["jvm"] as JArray)
+            var arr1 = forgeJsonObject["arguments"]["jvm"] as JArray;
+            foreach (var item in arr1)
             {
                 ((mcJsonObject["arguments"]["jvm"]) as JArray).Add(item);
             }
-            foreach (var item in forgeJsonObject["arguments"]["game"] as JArray)
+            var arr2 = forgeJsonObject["arguments"]["game"] as JArray;
+            foreach (var item in arr2)
             {
                 ((mcJsonObject["arguments"]["game"]) as JArray).Add(item);
             }
-            foreach (var item in forgeJsonObject["libraries"] as JArray)
+            var arr3 = forgeJsonObject["libraries"] as JArray;
+            foreach (var item in arr3)
             {
                 ((mcJsonObject["libraries"]) as JArray).Add(item);
             }
-            mcJsonObject["inheritsFrom"] = forgeJsonObject["inheritsFrom"];
             mcJsonObject["id"] = forgeJsonObject["id"];
             mcJsonObject["time"] = forgeJsonObject["time"];
             mcJsonObject["releaseTime"] = forgeJsonObject["releaseTime"];
             mcJsonObject["type"] = forgeJsonObject["type"];
             mcJsonObject["mainClass"] = forgeJsonObject["mainClass"];
+            mcJsonObject["inheritsFrom"] = forgeJsonObject["inheritsFrom"];
+            return mcJsonObject.ToString();
+        }
+        public static string CombineInstallerProfileJson(string mcJson, string forgeJson, ParseType type)
+        {
+            JObject mcJsonObject;
+            JObject forgeJsonObject;
+            if (type == ParseType.Json)
+            {
+                mcJsonObject = JObject.Parse(mcJson);
+                forgeJsonObject = JObject.Parse(forgeJson);
+            }
+            else if (type == ParseType.FilePath)
+            {
+                mcJsonObject = JObject.Parse(File.ReadAllText(mcJson));
+                forgeJsonObject = JObject.Parse(File.ReadAllText(forgeJson));
+            }
+            else
+            {
+                using (var clt = new WebClient())
+                {
+                    mcJsonObject = JObject.Parse(clt.DownloadString(mcJson));
+                    forgeJsonObject = JObject.Parse(clt.DownloadString(forgeJson));
+                }
+            }
+            var arr3 = forgeJsonObject["libraries"] as JArray;
+            foreach (var item in arr3)
+            {
+                ((mcJsonObject["libraries"]) as JArray).Add(item);
+            }            
             return mcJsonObject.ToString();
         }
     }

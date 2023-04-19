@@ -126,39 +126,43 @@ namespace CoreLaunching.JsonTemplates
             }
         }
 
-        public Process GetProcess(string javaExePath,string librariesPath, Dictionary<string, ClientAndServerPair> data)
+        public Process GetProcess(string javaExePath,string workPath, Dictionary<string, ClientAndServerPair> data)
         {
             var process = new Process();
             var inf = new ProcessStartInfo();
-            inf.WorkingDirectory = librariesPath;
+            inf.WorkingDirectory = workPath;
             inf.FileName = javaExePath;
-            inf.Arguments = GetArgs(librariesPath, data);
+            inf.Arguments = GetArgs(workPath, data);
             inf.RedirectStandardOutput= true;
             process.StartInfo= inf;
             return process;
         }
 
-        private string GetArgs(string librariesPath, Dictionary<string, ClientAndServerPair> data)
+        private string GetArgs(string workPath, Dictionary<string, ClientAndServerPair> data)
         {
             var args = "-cp ";
-            var cps = Jar.GetLibraryFileName(librariesPath)+";";
+            var cps = Jar.GetLibraryFileName(workPath)+";";
             foreach (var item in ClassPath)
             {
-                var fileP = item.GetLibraryFileName(librariesPath);
+                var fileP = item.GetLibraryFileName(workPath);
                 cps += fileP + ";";
             }
             cps.Remove(cps.Length-2,1);
             if (cps.Contains(" ")) { cps = $"\"{cps}\""; }
             args+= cps;
-            args += (" " + GetMainClassFromPackName(librariesPath) + " ");
+            args += (" " + GetMainClassFromPackName(workPath) + " ");
             var MainCArgs = "";
             foreach (var item in Args)
             {
+                if (item == "DOWNLOAD_MOJMAPS")
+                {
+
+                }
                 if (item.Contains("@"))
                 {
                     var nP = item;
                     nP = nP.Replace("[", "").Replace("]","");
-                    nP = nP.GetLibraryFileName(librariesPath);
+                    nP = nP.GetLibraryFileName(workPath);
                     if (nP.Contains(" ")) {nP=$"\"{nP}\""; }
                     MainCArgs += nP + " ";
                 }
@@ -169,20 +173,25 @@ namespace CoreLaunching.JsonTemplates
             }
             foreach (var item in data)
             {
-                if (MainCArgs.Contains(item.Key))
+                if (MainCArgs.Contains(item.Key) && item.Key != "{MINECRAFT_JAR}" && item.Key != "{BINPATCH}" && item.Key != "{SIDE}")
                 {
-                    if (item.Value.Client.Contains("@"))
-                    {
                         var nP = item.Value.Client;
                         nP = nP.Replace("[", "").Replace("]", "");
-                        nP = nP.GetLibraryFileName(librariesPath);
+                        nP = nP.GetLibraryFileName(workPath);
                         if (nP.Contains(" ")) { nP = $"\"{nP}\""; }
                         MainCArgs = MainCArgs.Replace(item.Key,nP);
-                    }
-                    else
-                    {
-                        MainCArgs = MainCArgs.Replace(item.Key, item.Value.Client);
-                    }
+                }
+                else if (item.Key == "{MINECRAFT_JAR}")
+                {
+                    MainCArgs = MainCArgs.Replace(item.Key, item.Value.Client);
+                }
+                else if (item.Key == "{BINPATCH}")
+                {
+                    MainCArgs = MainCArgs.Replace(item.Key, item.Value.Client);
+                }
+                else if (item.Key == "{SIDE}")
+                {
+                    MainCArgs = MainCArgs.Replace(item.Key, item.Value.Client);
                 }
             }
             args += MainCArgs;
@@ -197,10 +206,9 @@ namespace CoreLaunching.JsonTemplates
         {
             var path = Jar.GetLibraryFileName(librariesPath);
             Directory.CreateDirectory(Path.GetFileName(path));
-            using (var zip = System.IO.Compression.ZipFile.OpenRead(path))
+            using (var zip = ZipFile.GetSubFileDataStream("META-INF/MANIFEST.MF", path))
             {
-                var mainfest = zip.GetEntry("META-INF/MANIFEST.MF");
-                var stream = new StreamReader(mainfest.Open());
+                var stream = new StreamReader(zip);
                 var currentLine = String.Empty;
 
                 while ((currentLine = stream.ReadLine()) != null)

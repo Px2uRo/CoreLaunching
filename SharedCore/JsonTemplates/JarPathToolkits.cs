@@ -22,7 +22,7 @@ namespace CoreLaunching.JsonTemplates
             }
             string final = "";
             string[] targets = name.Split(':');
-            if (targets.Length < 3) return null;
+            if (targets.Length < 3) return string.Empty;
             else
             {
                 var pathBase = string.Join("\\", targets[0].Replace('.', '\\'), targets[1], targets[2], targets[1]) + '-' + targets[2];

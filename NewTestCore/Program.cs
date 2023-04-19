@@ -15,25 +15,20 @@ namespace NewTestCore
 
         static void Main(string[] args)
         {
-            var prf = JsonConvert.DeserializeObject<InstallProfile>(System.IO.File.ReadAllText(@"C:\Users\Lenovo\Downloads\forge-1.19.3-44.0.1-installer\install_profile.json"));
-            var datab = prf.Data;
-            datab.Add("{SIDE}", new ClientAndServerPair("client", "server"));
-            var pr1 = prf.Processors.Where((x) => x.IsForClient).ToArray()[0]
-                .GetProcess(
-                "C:\\Program Files\\Microsoft\\jdk-17.0.2.8-hotspot\\bin\\java.exe", 
-                "I:\\Xiong's\\WPF\\ForgeInstallerTest\\ForgeInstallerTest\\bin\\Debug\\net7.0\\.minecraft\\libraries",datab);
-            pr1.OutputDataReceived += Pr1_OutputDataReceived;
-            pr1.Start();
-            pr1.BeginOutputReadLine();
-            while (!pr1.HasExited)
-            {
-
-            }
+            var installer = new ForgeInstaller();
+            installer.Output += Pr1_OutputDataReceived;
+            installer.InstallClient(
+                @"C:\Program Files\Microsoft\jdk-17.0.2.8-hotspot\bin\java.exe", 
+                "I:\\Xiong's\\MEFLCollection\\MEFLAva\\MEFL\\bin\\Debug\\net7.0\\.minecraft\\libraries",
+                @"I:\Xiong's\MEFLCollection\MEFLAva\MEFL\bin\Debug\net7.0\.minecraft\versions\1.19.3_forge_44.0.1\1.19.3_forge_44.0.1.jar",
+          @"I:\Xiong's\MEFLCollection\MEFLAva\MEFL\bin\Debug\net7.0\.minecraft\versions\1.19.3_forge_44.0.1\1.19.3_forge_44.0.1.json",
+@"C:\Users\Lenovo\Downloads\forge-1.19.3-44.0.1-installer\install_profile.json", CoreLaunching.PinKcatDownloader.ParseType.FilePath
+                );
         }
 
-        private static void Pr1_OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
+        private static void Pr1_OutputDataReceived(object sender,string e)
         {
-            Console.WriteLine(e.Data);
+            Console.WriteLine(e);
         }
 
         static void OTC5(string[] args)

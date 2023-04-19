@@ -75,12 +75,28 @@ namespace CoreLaunching
             }
             return lst.ToArray();
         }
+        public static MemoryStream GetSubFileDataStream(string subFileName, string zipFilePath)
+        {
+            var fs = File.Open(zipFilePath, FileMode.Open);
+            using (var zipf = new comp.ZipArchive(fs))
+            {
+                var itm = zipf.Entries.Where((x) => x.FullName == subFileName).ToArray()[0];
+                using (var stm = itm.Open())
+                {
+                    var ms = new MemoryStream();
+                    stm.CopyTo(ms);
+                    ms.Position= 0;
+                    return ms;
+                }
+            }
+        }
+
         public static byte[] GetSubFileData(string subFileName, string zipFilePath)
         {
             var fs = File.Open(zipFilePath,FileMode.Open);
             using (var zipf = new comp.ZipArchive(fs))
             {
-                var itm = zipf.Entries.Where((x) => x.Name == subFileName).ToArray()[0];
+                var itm = zipf.Entries.Where((x) => x.FullName == subFileName).ToArray()[0];
                 using (var stm = itm.Open())
                 {
                     using (var ms = new MemoryStream())
