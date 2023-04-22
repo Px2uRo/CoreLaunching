@@ -126,31 +126,31 @@ namespace CoreLaunching.JsonTemplates
             }
         }
 
-        public Process GetProcess(string javaExePath,string workPath, Dictionary<string, ClientAndServerPair> data)
+        public Process GetProcess(string javaExePath, string librariesPath, string workPath, Dictionary<string, ClientAndServerPair> data)
         {
             var process = new Process();
             var inf = new ProcessStartInfo();
             inf.WorkingDirectory = workPath;
             inf.FileName = javaExePath;
-            inf.Arguments = GetArgs(workPath, data);
+            inf.Arguments = GetArgs(librariesPath, workPath, data);
             inf.RedirectStandardOutput= true;
             process.StartInfo= inf;
             return process;
         }
 
-        private string GetArgs(string workPath, Dictionary<string, ClientAndServerPair> data)
+        private string GetArgs(string librariesPath,string workPath, Dictionary<string, ClientAndServerPair> data)
         {
             var args = "-cp ";
-            var cps = Jar.GetLibraryFileName(workPath)+";";
+            var cps = Jar.GetLibraryFileName(librariesPath) +";";
             foreach (var item in ClassPath)
             {
-                var fileP = item.GetLibraryFileName(workPath);
+                var fileP = item.GetLibraryFileName(librariesPath);
                 cps += fileP + ";";
             }
             cps.Remove(cps.Length-2,1);
             if (cps.Contains(" ")) { cps = $"\"{cps}\""; }
             args+= cps;
-            args += (" " + GetMainClassFromPackName(workPath) + " ");
+            args += (" " + GetMainClassFromPackName(librariesPath) + " ");
             var MainCArgs = "";
             foreach (var item in Args)
             {
@@ -162,7 +162,7 @@ namespace CoreLaunching.JsonTemplates
                 {
                     var nP = item;
                     nP = nP.Replace("[", "").Replace("]","");
-                    nP = nP.GetLibraryFileName(workPath);
+                    nP = nP.GetLibraryFileName(librariesPath);
                     if (nP.Contains(" ")) {nP=$"\"{nP}\""; }
                     MainCArgs += nP + " ";
                 }
@@ -177,7 +177,7 @@ namespace CoreLaunching.JsonTemplates
                 {
                         var nP = item.Value.Client;
                         nP = nP.Replace("[", "").Replace("]", "");
-                        nP = nP.GetLibraryFileName(workPath);
+                        nP = nP.GetLibraryFileName(librariesPath);
                         if (nP.Contains(" ")) { nP = $"\"{nP}\""; }
                         MainCArgs = MainCArgs.Replace(item.Key,nP);
                 }

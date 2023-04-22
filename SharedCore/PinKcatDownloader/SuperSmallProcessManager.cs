@@ -42,7 +42,6 @@ namespace CoreLaunching.PinKcatDownloader
         public long MaxBytes = 2500000;
         private long RunningBytes = 0;
         public event EventHandler QueueEmpty;
-        public event EventHandler ManagerEmpty;
         public void DownloadSingle()
         {
             Queue<MCFileInfo> queue = new();
@@ -62,15 +61,16 @@ namespace CoreLaunching.PinKcatDownloader
                     }
                     else
                     {
-                        QueueEmpty?.Invoke(this,new());
                         break;
                     }
                 }
                 Thread.Sleep(200);
             }
-            ManagerEmpty?.Invoke(this,new());
+            QueueEmpty?.Invoke(this, new());
         }
         public event EventHandler<MCFileInfo> OneFinished;
+
+        public event EventHandler<MCFileFailedArgs> OneFailed;
         public long AllLengthGetted { get; set; }
         private void Proc_Finished(object? sender, Thread e)
         {
@@ -83,6 +83,22 @@ namespace CoreLaunching.PinKcatDownloader
         public SuperSmallProcessManager(MCFileInfo[] infos)
         {
             Infos = infos;
+        }
+    }
+
+    public class MCFileFailedArgs:EventArgs
+    {
+        private MCFileInfo _info;
+
+        public MCFileInfo Info => _info;
+        private Exception _ex;
+
+        public Exception Exception => _ex;
+
+        public MCFileFailedArgs(MCFileInfo info,Exception ex)
+        {
+            _info=info;
+            _ex=ex;
         }
     }
 }

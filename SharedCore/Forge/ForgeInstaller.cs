@@ -11,74 +11,33 @@ namespace CoreLaunching.Forge
     public class ForgeInstaller
     {
         public event EventHandler<string> Output;
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="jREPath">JAVA 运行时路径（只能本地）</param>
-        /// <param name="minecraft_Jar">原版游戏 JAR 路径（只能本地）</param>
-        /// <param name="mCJson"></param>
-        /// <param name="installerProfiles"></param>
-        /// <param name="type">解析类型</param>
-        public static void ClientInstall(string jREPath,string workPath, string minecraft_Jar,string mCJson, string installerProfiles,ParseType type)
+        public event EventHandler<long> DownloadedSizeUpdated;
+        public void InstallClient(string jREPath, string librariesPath, string minecraft_Jar, string mCJson, string installerJar, ParseType type)
         {
-            InstallProfile insp;
-            Root mCr;
-            if(type==ParseType.Json)
-            {
-                insp = JsonConvert.DeserializeObject<InstallProfile>(installerProfiles);
-                mCr = JsonConvert.DeserializeObject<Root>(mCJson);
-            }
-            else if(type == ParseType.FilePath)
-            {
-                insp = JsonConvert.DeserializeObject<InstallProfile>(System.IO.File.ReadAllText(installerProfiles));
-                mCr = JsonConvert.DeserializeObject<Root>(System.IO.File.ReadAllText(mCJson));
-            }
-            else
-            {
-                using (var clt = new WebClient())
-                {
-                    var inst = clt.DownloadString(installerProfiles);
-                    var mCt = clt.DownloadString(mCJson);
-                    insp = JsonConvert.DeserializeObject<InstallProfile>(System.IO.File.ReadAllText(inst));
-                    mCr = JsonConvert.DeserializeObject<Root>(System.IO.File.ReadAllText(mCt));
-                }
-            }
-            var datab = insp.Data;
-            datab.Add("{SIDE}", new ClientAndServerPair("client", "server"));
-            datab.Add("{MINECRAFT_JAR}", new ClientAndServerPair(minecraft_Jar, string.Empty));
-            datab["{BINPATCH}"].Client = Path.Combine(workPath, datab["{BINPATCH}"].Client.Remove(0, 1).Replace("/", "\\"));
-            datab["{BINPATCH}"].Server = Path.Combine(workPath, datab["{BINPATCH}"].Server.Remove(0, 1).Replace("/", "\\"));
-            var procs = insp.Processors.Where((x) => x.IsForClient).ToArray();
-            foreach (var item in procs)
-            {
-                var proc = item.GetProcess(jREPath,workPath,datab);
-                proc.StartInfo.RedirectStandardOutput= true;
-                proc.Start();
-                proc.WaitForExit();
-            }
-        }
-
-        public void InstallClient(string jREPath, string workPath, string minecraft_Jar, string mCJson, string installerProfiles, ParseType type)
-        {
+            var workPath = Path.Combine(librariesPath, "[CL]InstallTmp");
+            Directory.CreateDirectory(workPath);
             InstallProfile insp;
             Root mCr;
             if (type == ParseType.Json)
             {
-                insp = JsonConvert.DeserializeObject<InstallProfile>(installerProfiles);
+                ZipFile.ExportAll(installerJar, workPath);
+                insp = JsonConvert.DeserializeObject<InstallProfile>(Path.Combine(workPath, "install_profile.json"));
                 mCr = JsonConvert.DeserializeObject<Root>(mCJson);
             }
             else if (type == ParseType.FilePath)
             {
-                insp = JsonConvert.DeserializeObject<InstallProfile>(System.IO.File.ReadAllText(installerProfiles));
+                ZipFile.ExportAll(installerJar, workPath);
+                insp = JsonConvert.DeserializeObject<InstallProfile>(System.IO.File.ReadAllText(Path.Combine(workPath, "install_profile.json")));
                 mCr = JsonConvert.DeserializeObject<Root>(System.IO.File.ReadAllText(mCJson));
             }
             else
             {
                 using (var clt = new WebClient())
                 {
-                    var inst = clt.DownloadString(installerProfiles);
+                    clt.DownloadFile(installerJar, Path.Combine(workPath, "[CL]FileTmp.jar"));
+                    ZipFile.ExportAll(Path.Combine(workPath, "[CL]FileTmp.jar"), workPath);
+                    insp = JsonConvert.DeserializeObject<InstallProfile>(System.IO.File.ReadAllText(Path.Combine(workPath, "install_profile.json")));
                     var mCt = clt.DownloadString(mCJson);
-                    insp = JsonConvert.DeserializeObject<InstallProfile>(System.IO.File.ReadAllText(inst));
                     mCr = JsonConvert.DeserializeObject<Root>(System.IO.File.ReadAllText(mCt));
                 }
             }
@@ -87,10 +46,13 @@ namespace CoreLaunching.Forge
             datab.Add("{MINECRAFT_JAR}", new ClientAndServerPair(minecraft_Jar, string.Empty));
             datab["{BINPATCH}"].Client = Path.Combine(workPath, datab["{BINPATCH}"].Client.Remove(0, 1).Replace("/", "\\"));
             datab["{BINPATCH}"].Server = Path.Combine(workPath, datab["{BINPATCH}"].Server.Remove(0, 1).Replace("/", "\\"));
+            
+            
             var procs = insp.Processors.Where((x) => x.IsForClient).ToArray();
             foreach (var item in procs)
             {
-                var proc = item.GetProcess(jREPath, workPath, datab);
+                var proc = item.GetProcess(jREPath, librariesPath,workPath, datab);
+                proc.StartInfo.WorkingDirectory = workPath;
                 proc.StartInfo.RedirectStandardOutput = true;
                 proc.StartInfo.RedirectStandardOutput=true;
                 proc.Start();

@@ -27,29 +27,31 @@ namespace CoreLaunching.PinKcatDownloader
                 return _thread; 
             }
         }
-
+        public event EventHandler<long> OnePartFinished;
         private Thread CreateThread()
         {
             return new Thread(() => {
-                var request = (HttpWebRequest)HttpWebRequest.Create(NativeUrl);
+                try
+                {
+                    var request = (HttpWebRequest)HttpWebRequest.Create(NativeUrl);
                 request.AddRange(From, To);
                 using (var response = request.GetResponse())
                 {
                     using (var stream = response.GetResponseStream())
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(LocalTempPath));
-                        try
-                        {
+                        
                             using (var fstream = File.Create(LocalTempPath))
                             {
                                 stream.CopyTo(fstream);
+                                OnePartFinished?.Invoke(this,fstream.Length);
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            IsOK = true;
-                        }
                     }
+                    IsOK = true;
+                }
+                catch (Exception ex)
+                {
                     IsOK = true;
                 }
             });
@@ -65,8 +67,9 @@ namespace CoreLaunching.PinKcatDownloader
     }
     public class MutilFileDownloadProcess
     {
-        public event EventHandler<RequestWithRange[]> WebFinished; 
-        public event EventHandler<MCFileInfo> CombineFinished;
+        public event EventHandler<RequestWithRange[]> WebFinished;
+        public event EventHandler<MCFileInfo> CombineFinished; 
+        public event EventHandler<long> OnePartFinished;
         private bool _isFinished;
 
         public bool IsFinished
@@ -144,7 +147,8 @@ namespace CoreLaunching.PinKcatDownloader
                 for (int i = 0; i < shang; i++)
                 {
                     var tempP = Path.Combine(tempF,$"{Path.GetFileNameWithoutExtension(info.Local)}part{i}.tmp");
-                    requsets.Add(new(info.Url,tempP,chushu*i, chushu * i+chushu - 1));
+                    RequestWithRange req = new(info.Url, tempP, chushu * i, chushu * i + chushu - 1);
+                    requsets.Add(req);
                 }
                 var tempL = Path.Combine(tempF, $"{Path.GetFileNameWithoutExtension(info.Local)}part{shang}.tmp");
                 requsets.Add(new(info.Url,tempL,chushu*shang,info.Size-1));

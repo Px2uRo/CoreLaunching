@@ -136,13 +136,41 @@ namespace CoreLaunching
                     {
                         if (entry.Name.EndsWith(".dll"))
                         {
-                            if(!overrite&&File.Exists(Path.Combine(DirName, entry.Name)))
+                            if (!overrite && File.Exists(Path.Combine(DirName, entry.Name)))
                             {
-                                return;
+                                continue;
                             }
                             var path = Path.Combine(DirName, entry.Name);
                             entry.ExtractToFile(path, overrite);
                         }
+                    }
+                }
+                str.Close();
+            }
+        }
+        public static void ExportAll(string zipFilePath, string dirName)
+        {
+            ExportAll(zipFilePath, dirName, false);
+        }
+        public static void ExportAll(string zipFilePath, string DirName, bool overrite)
+        {
+            using (var str = File.OpenRead(zipFilePath))
+            {
+                using (var zipf = new comp.ZipArchive(str))
+                {
+                    foreach (var entry in zipf.Entries)
+                    {
+                        if (!overrite && File.Exists(Path.Combine(DirName, entry.FullName.Replace("/","\\"))))
+                        {
+                            continue;
+                        }
+                        if (entry.FullName.EndsWith("/"))
+                        {
+                            continue;
+                        }
+                        var path = Path.Combine(DirName, entry.FullName.Replace("/", "\\"));
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                        entry.ExtractToFile(path, overrite);
                     }
                 }
                 str.Close();

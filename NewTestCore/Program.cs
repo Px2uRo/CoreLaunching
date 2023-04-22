@@ -2,6 +2,7 @@
 using CoreLaunching.Forge;
 using CoreLaunching.JsonTemplates;
 using CoreLaunching.MicrosoftAuth;
+using CoreLaunching.PinKcatDownloader;
 using Newtonsoft.Json;
 using System;
 using System.Net;
@@ -15,6 +16,16 @@ namespace NewTestCore
 
         static void Main(string[] args)
         {
+            var parser = new ForgeParser();
+            var lst = parser.ParseFromInstaller(@"C:\Users\Lenovo\Downloads\forge-1.19.3-44.0.1-installer\install_profile.json",false, 
+                @"I:\Xiong's\MEFLCollection\MEFLAva\MEFL\bin\Debug\net7.0\.minecraft");
+            var downloader = new ProcessManager(lst);
+            downloader.DownloadedSizeUpdated += Downloader_DownloadedSizeUpdated;
+            downloader.Start("I:\\Xiong's\\MEFLCollection\\MEFLAva\\MEFL\\bin\\Debug\\net7.0\\.minecraft\\CoreLaucnchingTmp");
+            while (downloader.State!=ThreadState.Stopped)
+            {
+
+            }
             var installer = new ForgeInstaller();
             installer.Output += Pr1_OutputDataReceived;
             installer.InstallClient(
@@ -22,8 +33,14 @@ namespace NewTestCore
                 "I:\\Xiong's\\MEFLCollection\\MEFLAva\\MEFL\\bin\\Debug\\net7.0\\.minecraft\\libraries",
                 @"I:\Xiong's\MEFLCollection\MEFLAva\MEFL\bin\Debug\net7.0\.minecraft\versions\1.19.3_forge_44.0.1\1.19.3_forge_44.0.1.jar",
           @"I:\Xiong's\MEFLCollection\MEFLAva\MEFL\bin\Debug\net7.0\.minecraft\versions\1.19.3_forge_44.0.1\1.19.3_forge_44.0.1.json",
-@"C:\Users\Lenovo\Downloads\forge-1.19.3-44.0.1-installer\install_profile.json", CoreLaunching.PinKcatDownloader.ParseType.FilePath
+@"C:\Users\Lenovo\Downloads\forge-1.19.3-44.0.1-installer.jar", CoreLaunching.PinKcatDownloader.ParseType.FilePath
                 );
+        }
+
+        private static void Downloader_DownloadedSizeUpdated(object? sender, long e)
+        {
+            Console.Clear();
+            Console.WriteLine(e.ToString());
         }
 
         private static void Pr1_OutputDataReceived(object sender,string e)

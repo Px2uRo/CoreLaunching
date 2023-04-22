@@ -24,6 +24,8 @@ namespace CoreLaunching.PinKcatDownloader
                     {
                         if (req.Thread.ThreadState == ThreadState.Unstarted)
                         {
+                            req.OnePartFinished -= Req_OnePartFinished;
+                            req.OnePartFinished += Req_OnePartFinished;
                             req.Thread.Start();
                         }
                     }
@@ -38,13 +40,20 @@ namespace CoreLaunching.PinKcatDownloader
                 }
             }
         }
+
+        private void Req_OnePartFinished(object? sender, long e)
+        {
+            OnePartFinsihed.Invoke(sender, e);
+        }
+
         public MCFileInfo[] Infos { get; set; }
         public MutilFileDownloaManager(MCFileInfo[] infos)
         {
             Infos= infos;
         }
         public event EventHandler QueueEmpty;
-        public event EventHandler ManagerEmpty;
+        public event EventHandler<MCFileFailedArgs> OneFailed;
+
         public void Download(string tempRoot)
         {
             Queue<MCFileInfo> queue = new();
@@ -59,12 +68,12 @@ namespace CoreLaunching.PinKcatDownloader
                     if (queue.Count > 0)
                     {
                         var proc = MutilFileDownloadProcess.Create(queue.Dequeue(),tempRoot);
+                        //proc.OnePartFinished 
                         proc.CombineFinished += Proc_Finished;
                         Add(proc);
                     }
                     else
                     {
-                        QueueEmpty?.Invoke(this, new());
                         break;
                     }
                 }
@@ -74,10 +83,16 @@ namespace CoreLaunching.PinKcatDownloader
             {
 
             }
-            ManagerEmpty?.Invoke(this, new());
+            QueueEmpty?.Invoke(this, new());
         }
 
-        public EventHandler<MCFileInfo> OneFinished;
+        private void Proc_WebFinished(object? sender, RequestWithRange[] e)
+        {
+
+        }
+
+        public event EventHandler<long> OnePartFinsihed;
+        public event EventHandler<MCFileInfo> OneFinished;
         private void Proc_Finished(object? sender, MCFileInfo e)
         {
             var proc = sender as MutilFileDownloadProcess;

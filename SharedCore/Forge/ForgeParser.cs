@@ -79,7 +79,11 @@ namespace CoreLaunching.Forge
             }
             else
             {
-                return File.ReadAllText(path);
+                using (var stream = File.Open(path,FileMode.Open))
+                {
+                    var data = ZipFile.GetSubFileData("version.json", stream);
+                    return Encoding.UTF8.GetString(data);
+                }
             }
         }
         public static string GetInstallProfileContentFromInstaller(string path, bool isUrl)
@@ -186,7 +190,7 @@ namespace CoreLaunching.Forge
             return res.ToArray();
         }
 
-        public static string CombineVersionJson(string mcJson, string forgeJson, ParseType type)
+        public static string CombineVersionJson(string mcJson, string forgeJson, ParseType type,string id)
         {
             JObject mcJsonObject;
             JObject forgeJsonObject;
@@ -229,6 +233,7 @@ namespace CoreLaunching.Forge
             mcJsonObject["type"] = forgeJsonObject["type"];
             mcJsonObject["mainClass"] = forgeJsonObject["mainClass"];
             mcJsonObject["inheritsFrom"] = forgeJsonObject["inheritsFrom"];
+            mcJsonObject["id"] = id;
             return mcJsonObject.ToString();
         }
         public static string CombineInstallerProfileJson(string mcJson, string forgeJson, ParseType type)
