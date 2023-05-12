@@ -21,14 +21,14 @@ namespace CoreLaunching.PinKcatDownloader
 
             [JsonProperty("url")]
             public string Url { get; set; }
-        [JsonIgnore]
-        public string Local { get; set; }
+            [JsonIgnore]
+            public string Local { get; set; }
 
         public override string ToString()
         {
             return $"{Id},{Size},{Url},{Local}";
         }
-        public MCFileInfo(string id, string sha1, int size, string url, string loacl)
+        public MCFileInfo(string id, string sha1, long size, string url, string loacl)
         {
             Id = id;
             Sha1 = sha1;

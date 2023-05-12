@@ -17,6 +17,7 @@ namespace CoreLaunching.PinKcatDownloader
         public event EventHandler<long>? DownloadedSizeUpdated;
         IEnumerable<MCFileInfo> Files;
         private ThreadState _state;
+        string _temp = string.Empty;
 
         public ThreadState State => _state;
         public ProcessManager(IEnumerable<MCFileInfo> files)
@@ -72,6 +73,7 @@ namespace CoreLaunching.PinKcatDownloader
             if(stepFinished== 3)
             {
                 _state = ThreadState.Stopped;
+                new DirectoryInfo(_temp).Delete();
                 Finished?.Invoke(this,e);
             }
         }

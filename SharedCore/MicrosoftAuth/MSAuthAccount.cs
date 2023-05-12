@@ -42,6 +42,7 @@ namespace CoreLaunching.MicrosoftAuth
             try
             {
                 WebResponse response3 = request3.GetResponse();
+                dataStream3.Dispose();
                 dataStream3 = response3.GetResponseStream();
                 StreamReader reader3 = new StreamReader(dataStream3);
                 responseFromServer = reader3.ReadToEnd();

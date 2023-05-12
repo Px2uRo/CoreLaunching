@@ -286,6 +286,8 @@ namespace CoreLaunching.JsonTemplates
         public string InheritsFrom { get; set; }
         [JsonProperty("arguments")]
         public Arguments Arguments { get; set; }
+        [JsonProperty("minecraftArguments")]
+        public string OldMinecraftArguments { get; set; }
 
         public AssetIndex AssetIndex { get; set; }
 
@@ -307,8 +309,6 @@ namespace CoreLaunching.JsonTemplates
         public string ReleaseTime { get; set; }
         public string Time { get; set; }
         public string Type { get; set; }
-        [JsonProperty("minecraftArguments")]
-        public string MinecraftArguments { get; set; }
     }
 
     public class Arguments

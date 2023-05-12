@@ -151,7 +151,12 @@ namespace CoreLaunching.PinKcatDownloader
                     requsets.Add(req);
                 }
                 var tempL = Path.Combine(tempF, $"{Path.GetFileNameWithoutExtension(info.Local)}part{shang}.tmp");
-                requsets.Add(new(info.Url,tempL,chushu*shang,info.Size-1));
+                var item = new RequestWithRange(info.Url, tempL, chushu * shang, info.Size - 1);
+                //item.OnePartFinished += new((_,e) => 
+                //{
+                //    res.FinishOnePart(e);
+                //});
+                requsets.Add(item);
                 res.Requsets = requsets.ToArray();
             }
             else
@@ -159,6 +164,11 @@ namespace CoreLaunching.PinKcatDownloader
                 throw new ArgumentException($"{info.Size}<=2500000!");
             }
             return res;
+        }
+
+        private void FinishOnePart(long e)
+        {
+            OnePartFinished?.Invoke(this, e);
         }
     }
 }

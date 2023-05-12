@@ -1,7 +1,9 @@
 ﻿using CoreLaunching;
+using CoreLaunching.Accounts;
 using CoreLaunching.Forge;
 using CoreLaunching.JsonTemplates;
 using CoreLaunching.MicrosoftAuth;
+using CoreLaunching.ModFinder;
 using CoreLaunching.PinKcatDownloader;
 using Newtonsoft.Json;
 using System;
@@ -16,20 +18,34 @@ namespace NewTestCore
 
         static void Main(string[] args)
         {
+            //var result =  McModFinder.FromName("JEI");
+            //var resultLinks = McModLinkResultItem.GetDownloadInfoFromPage("https://www.mcmod.cn/class/459.html");
+            //var upa = new UnitedPassportAccount() { EmailAddress= "3245813053@qq.com",
+            //    Password= "qweasdzxc.",
+            //    ServerID = "9b56c301b0ca11eb9d5300163e095b49" };
+            var upa = UnitedPassportAccount.GetAccountWithToken("9b56c301b0ca11eb9d5300163e095b49", "3245813053@qq.com", "qweasdzxc.");
+            if(!upa.SingUp(out var errorInfo))
+            {
+                Console.WriteLine(errorInfo);
+            }
+        }
+
+        static void OTC5()
+        {
             var parser = new ForgeParser();
-            var lst = parser.ParseFromInstaller(@"C:\Users\Lenovo\Downloads\forge-1.19.3-44.0.1-installer\install_profile.json",false, 
+            var lst = parser.ParseFromInstaller(@"C:\Users\Lenovo\Downloads\forge-1.19.3-44.0.1-installer\install_profile.json", false,
                 @"I:\Xiong's\MEFLCollection\MEFLAva\MEFL\bin\Debug\net7.0\.minecraft");
             var downloader = new ProcessManager(lst);
             downloader.DownloadedSizeUpdated += Downloader_DownloadedSizeUpdated;
             downloader.Start("I:\\Xiong's\\MEFLCollection\\MEFLAva\\MEFL\\bin\\Debug\\net7.0\\.minecraft\\CoreLaucnchingTmp");
-            while (downloader.State!=ThreadState.Stopped)
+            while (downloader.State != ThreadState.Stopped)
             {
 
             }
             var installer = new ForgeInstaller();
             installer.Output += Pr1_OutputDataReceived;
             installer.InstallClient(
-                @"C:\Program Files\Microsoft\jdk-17.0.2.8-hotspot\bin\java.exe", 
+                @"C:\Program Files\Microsoft\jdk-17.0.2.8-hotspot\bin\java.exe",
                 "I:\\Xiong's\\MEFLCollection\\MEFLAva\\MEFL\\bin\\Debug\\net7.0\\.minecraft\\libraries",
                 @"I:\Xiong's\MEFLCollection\MEFLAva\MEFL\bin\Debug\net7.0\.minecraft\versions\1.19.3_forge_44.0.1\1.19.3_forge_44.0.1.jar",
           @"I:\Xiong's\MEFLCollection\MEFLAva\MEFL\bin\Debug\net7.0\.minecraft\versions\1.19.3_forge_44.0.1\1.19.3_forge_44.0.1.json",
@@ -88,7 +104,7 @@ namespace NewTestCore
 
 
             g.FinalCommand = g.FormatGameArgs("gameDir ${game_directory}");
-            j.FinnalCommand = j.FormatCommand("-666 ${classpath}", li);
+            j.FinnalCommand = j.FormatCommand("-cp ${classpath}", li);
 
             l.GameInfo = g;
             l.JVMInfo = j;

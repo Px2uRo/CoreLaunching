@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.IO;
+using CoreLaunching.Accounts;
 
 namespace CoreLaunching
 {
@@ -14,7 +15,7 @@ namespace CoreLaunching
     /// </summary>
     public class Launcher
     {
-        #region Methos
+        #region Properties
         /// <summary>
         /// 启动器信息变量
         /// </summary>
@@ -40,7 +41,7 @@ namespace CoreLaunching
         /// </summary>
         public string GameJarPath { get; set; }
         #endregion
-        #region Commands
+        #region Methods
         /// <summary>
         /// 这个是验证值为不为空的
         /// </summary>
@@ -137,10 +138,9 @@ namespace CoreLaunching
             var parsed = ParseRoot();
             this.GameInfo.MainClass = parsed.MainClass;
             this.JVMInfo.ClassPath = GetClassPaths(parsed);
-            parsed = null;
         }
         #endregion
-        #region Static Commands
+        #region Static Methods
         public static string GetMainClassString(string JsonPath)
         {
             return FileToJObject.LoadJson(JsonPath)["MainClass"].ToString();
@@ -172,34 +172,12 @@ namespace CoreLaunching
     /// </summary>
     public class GameInfo
     {
+        #region Properties
         /// <summary>
         /// 如果你想要随时查看当前替换的是什么的话，我提供这个公开变量，但是是只读的，你要格外添加的话，还是设置 OtherArgs 就好
         /// </summary>
-        public Dictionary<string,string> ApiFormatMap { get; private set; }
-        /// <summary>
-        /// 这个就是刷新公开变量的办法
-        /// </summary>
-        /// <returns>意义不明返回</returns>
-        public Dictionary<string, string> RefreshApiFormatMap()
-        {
-            ApiFormatMap = new Dictionary<string, string>()
-            {
-                {"${auth_player_name}",this.UserName},
-                {"${version_name}",this.GameVersion},
-                {"${game_directory}",this.GameDir},
-                {"${assets_root}",this.AssetsDir},
-                {"${assets_index_name}",this.AssetIndex },
-                {"${auth_uuid}",this.Uuid},
-                {"${auth_access_token}",this.AccessToken },
-                {"${clientid}",this.ClientID },
-                {"${auth_xuid}",this.Xuid},
-                {"${user_type}",this.UserType},
-                {"${version_type}",this.VersionType},
-                {"${userProperties}",this.UserProperties}
-            };
-            return ApiFormatMap;
-        }
-        public string MainClass { get; set; }
+        public Dictionary<string, string> ApiFormatMap { get; private set; }
+        public string ExtraJVMArgs { get; set; }
         #region 俗称Minecraft Arguments
         public string UserName { get; set; }
         public string GameVersion { get; set; }
@@ -213,31 +191,77 @@ namespace CoreLaunching
         public string ClientID { get; set; }
         public string Xuid { get; set; }
         public string VersionType { get; set; }
-        #endregion
+        public string MainClass { get; set; }
         /// <summary>
         /// 公开的，可以设置其他要替换的游戏参数。
         /// </summary>
-        public Dictionary<string, string> OtherArguments { get; set; }
+        public Dictionary<string, string> OtherArguments { get; set; }        
+        /// <summary>
+        /// 这是给 Launcher 这个 class 看的，Launcher 这个 class 会通过这部分启动游戏
+        /// </summary>
+        public string FinalCommand { get; set; }
+        #endregion
+        #endregion
+        #region Methods
+        /// <summary>
+        /// 这个就是刷新公开变量的办法
+        /// </summary>
+        public void RefreshApiFormatMap()
+        {
+            if(ApiFormatMap != null)
+            {
+                ApiFormatMap.Clear();
+                ApiFormatMap.Add("${auth_player_name}", this.UserName);
+                ApiFormatMap.Add("${version_name}", this.GameVersion);
+                ApiFormatMap.Add("${game_directory}", this.GameDir);
+                ApiFormatMap.Add("${assets_root}", this.AssetsDir);
+                ApiFormatMap.Add("${assets_index_name}", this.AssetIndex);
+                ApiFormatMap.Add("${auth_uuid}", this.Uuid);
+                ApiFormatMap.Add("${auth_access_token}", this.AccessToken);
+                ApiFormatMap.Add("${clientid}", this.ClientID);
+                ApiFormatMap.Add("${auth_xuid}", this.Xuid);
+                ApiFormatMap.Add("${user_type}", this.UserType);
+                ApiFormatMap.Add("${version_type}", this.VersionType);
+                ApiFormatMap.Add("${userProperties}", this.UserProperties);
+            }
+            else
+            {
+                ApiFormatMap = new Dictionary<string, string>()
+                {
+                    {"${auth_player_name}",this.UserName},
+                    {"${version_name}",this.GameVersion},
+                    {"${game_directory}",this.GameDir},
+                    {"${assets_root}",this.AssetsDir},
+                    {"${assets_index_name}",this.AssetIndex },
+                    {"${auth_uuid}",this.Uuid},
+                    {"${auth_access_token}",this.AccessToken },
+                    {"${clientid}",this.ClientID },
+                    {"${auth_xuid}",this.Xuid},
+                    {"${user_type}",this.UserType},
+                    {"${version_type}",this.VersionType},
+                    {"${userProperties}",this.UserProperties}
+                };
+            }
+        }
         /// <summary>
         /// 格式化游戏参数
         /// </summary>
         /// <param name="Input">导入的内容</param>
-        /// <returns>返回的还是这个Input</returns>
         public string FormatGameArgs(string Input)
         {
-            ApiFormatMap = RefreshApiFormatMap();
+            RefreshApiFormatMap();
             foreach (var item in ApiFormatMap)
             {
-                if(item.Key.Contains(" ") && item.Key.StartsWith(@"""") != true && item.Key.EndsWith(@"""") != true)
+                if (item.Key.Contains(" ") && item.Key.StartsWith(@"""") != true && item.Key.EndsWith(@"""") != true)
                 {
-                    Input = Input.Replace(item.Key, @""""+item.Value+@"""");
+                    Input = Input.Replace(item.Key, @"""" + item.Value + @"""");
                 }
                 else
                 {
                     Input = Input.Replace(item.Key, item.Value);
                 }
             }
-            if(OtherArguments != null)
+            if (OtherArguments != null)
             {
                 foreach (var item in OtherArguments)
                 {
@@ -259,7 +283,7 @@ namespace CoreLaunching
         /// <param name="Input">输入指令</param>
         /// <param name="Map">是一个Dictionary<string,string></param>
         /// <returns>返回就是整理好的启动游戏指令</returns>
-        public static string FormatGameArgsFromMap(string Input,Dictionary<string,string> Map)
+        public static string FormatGameArgsFromMap(string Input, Dictionary<string, string> Map)
         {
             foreach (var item in Map)
             {
@@ -268,9 +292,28 @@ namespace CoreLaunching
             return Input;
         }
         /// <summary>
-        /// 这是给 Launcher 这个 class 看的，Launcher 这个 class 会通过这部分启动游戏
+        /// 从账户读取信息
         /// </summary>
-        public string FinalCommand { get; set; }
+        /// <param name="account">账户</param>
+        public void LoadAccount(IAccount account)
+        {
+            if (account.SingUp(out var errorInfo))
+            {
+                AccessToken = account.AccessToken;
+                Uuid = account.Uuid;
+                Xuid = account.Xuid;
+                UserName = account.UserName;
+                UserProperties = account.UserProperties;
+                ClientID = account.ClientID;
+                UserType = account.UserType;
+                ExtraJVMArgs = account.JVMArgs;
+            }
+            else
+            {
+                throw new Exception(errorInfo);
+            }
+        }
+        #endregion
         public GameInfo()
         {
             RefreshApiFormatMap();
@@ -339,4 +382,5 @@ namespace CoreLaunching
             this.OSNameArg = $"\"-Dos.name={Name()}\" -Dos.version={System.Environment.OSVersion.Version.Major}.{System.Environment.OSVersion.Version.Minor}";
         }
     }
+
 }
