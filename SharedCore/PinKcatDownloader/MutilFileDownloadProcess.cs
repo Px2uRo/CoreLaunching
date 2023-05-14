@@ -17,7 +17,7 @@ namespace CoreLaunching.PinKcatDownloader
         public long To { get; set; }
         private Thread _thread = null;
 
-        public Thread Thread
+        public Thread DownThread
         {
             get { 
                 if(_thread == null)
@@ -27,7 +27,10 @@ namespace CoreLaunching.PinKcatDownloader
                 return _thread; 
             }
         }
+        bool _break = false;
         public event EventHandler<long> OnePartFinished;
+        public event EventHandler<long> WholeFinished;
+        public event EventHandler<EventArgs> Failed;
         private Thread CreateThread()
         {
             return new Thread(() => {
@@ -40,21 +43,47 @@ namespace CoreLaunching.PinKcatDownloader
                     using (var stream = response.GetResponseStream())
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(LocalTempPath));
-                        
                             using (var fstream = File.Create(LocalTempPath))
                             {
-                                stream.CopyTo(fstream);
-                                OnePartFinished?.Invoke(this,fstream.Length);
+                                var nbytes = new byte[4096];
+                                var nreadsize = stream.Read(nbytes, 0, 4096);
+                                OnePartFinished?.Invoke(this, nreadsize);
+                                while (nreadsize > 0)
+                                {   
+                                    fstream.Write(nbytes, 0, nreadsize);
+                                    nreadsize = stream.Read(nbytes, 0, 4096);
+                                    if(_break)
+                                    {
+                                        fstream.Close();
+                                        stream.Close();
+                                        response.Close();
+                                        _thread = CreateThread();
+                                        _thread.Start();
+                                        OnePartFinished?.Invoke(this, 0-fstream.Length);
+                                        return;
+                                    }
+                                    OnePartFinished?.Invoke(this,nreadsize);
+                                }
+                                WholeFinished?.Invoke(this,From - To);
                             }
                         }
                     }
                     IsOK = true;
+                    GC.SuppressFinalize(_thread);
+                    _thread = null;
+                    GC.Collect();
                 }
                 catch (Exception ex)
                 {
-                    IsOK = true;
+                    Failed?.Invoke(this,EventArgs.Empty);
+                    _thread = CreateThread();
                 }
             });
+        }
+
+        public void Break()
+        {
+            _break = true;
         }
 
         public RequestWithRange(string nativeUrl, string localTempPath, long from, long to)
@@ -133,17 +162,22 @@ namespace CoreLaunching.PinKcatDownloader
         public RequestWithRange[] Requsets { get; set; }
         public MCFileInfo Info;
 
-        public static MutilFileDownloadProcess Create(MCFileInfo info,string tempRoot)
+        public static MutilFileDownloadProcess Create(MCFileInfo info,string tempRoot, long chushu = 2500000)
         {
             var res = new MutilFileDownloadProcess();
             res.Info = info;
-            long chushu = 2500000;
-            if (info.Size > 2500000)
+            if (info.Size > chushu)
             {
                 var tempF = Path.Combine(tempRoot,Path.GetFileNameWithoutExtension(info.Local));
-                int shang = (int)info.Size / (int)chushu;
+                long shang = info.Size / (int)chushu;
                 var yushu = info.Size % chushu;
                 List<RequestWithRange> requsets = new List<RequestWithRange>();
+                //if (shang>64)
+                //{
+                //    chushu = info.Size / 64;
+                //    shang = info.Size / chushu;
+                //    yushu = info.Size % chushu;
+                //}
                 for (int i = 0; i < shang; i++)
                 {
                     var tempP = Path.Combine(tempF,$"{Path.GetFileNameWithoutExtension(info.Local)}part{i}.tmp");
@@ -161,14 +195,9 @@ namespace CoreLaunching.PinKcatDownloader
             }
             else
             {
-                throw new ArgumentException($"{info.Size}<=2500000!");
+                throw new ArgumentException($"{info.Size}<={chushu}!");
             }
             return res;
-        }
-
-        private void FinishOnePart(long e)
-        {
-            OnePartFinished?.Invoke(this, e);
         }
     }
 }

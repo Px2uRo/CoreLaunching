@@ -168,7 +168,7 @@ namespace CoreLaunching
             fc.Combine(Local, HelperPool);
             while(fc.working)
             {
-                //Thread.Sleep(1000);
+                //DownThread.Sleep(1000);
             }
             fc.Dispose();
             #endregion

@@ -22,11 +22,11 @@ namespace CoreLaunching.PinKcatDownloader
                     added = true;
                     foreach (var req in item.Requsets)
                     {
-                        if (req.Thread.ThreadState == ThreadState.Unstarted)
+                        if (req.DownThread.ThreadState == ThreadState.Unstarted)
                         {
-                            req.OnePartFinished -= Req_OnePartFinished;
-                            req.OnePartFinished += Req_OnePartFinished;
-                            req.Thread.Start();
+                            req.WholeFinished -= Req_OnePartFinished;
+                            req.WholeFinished += Req_OnePartFinished;
+                            req.DownThread.Start();
                         }
                     }
                     if(item.CombineThread.ThreadState == ThreadState.Unstarted) 

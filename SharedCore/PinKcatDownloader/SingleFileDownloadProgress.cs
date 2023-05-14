@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CoreLaunching.PinKcatDownloader
@@ -96,28 +97,39 @@ namespace CoreLaunching.PinKcatDownloader
             if (info.Size < 2500000)
             {
                 var thread1 = new Thread(() => {
-                    using (var clt = new WebClient())
-                    {
+
                         try
                         {
-                            Directory.CreateDirectory(Path.GetDirectoryName(info.Local));
-                            clt.DownloadFileAsync(new(info.Url), info.Local);
-                            clt.DownloadProgressChanged += new((_, e) => 
-                            { 
-                            res.UpdateDownloaded(e.BytesReceived);
-                            });
-                            clt.DownloadFileCompleted += new((_, e) =>
+                            long lastL = 0;
+                            var request = (HttpWebRequest)HttpWebRequest.Create(info.Url);
+                            using (var response = request.GetResponse())
                             {
-                                res.Finish();
-                            });
-                            res.IsFinished = true;
+                                using (var stream = response.GetResponseStream())
+                                {
+                                    Directory.CreateDirectory(Path.GetDirectoryName(info.Local));
+                                    using (var fstream = File.Create(info.Local))
+                                    {
+                                        var nbytes = new byte[4096];
+                                        var nreadsize = stream.Read(nbytes, 0, 4096);
+                                    res.UpdateDownloaded(nreadsize);
+                                    while (nreadsize > 0)
+                                        {
+                                            fstream.Write(nbytes, 0, nreadsize);
+                                            nreadsize = stream.Read(nbytes, 0, 4096);
+                                            res.UpdateDownloaded(nreadsize);
+                                        }
+                                        res.Finish();
+                                        res.IsFinished = true;
+                                    }
+                                }
+                            }
                         }
                         catch (Exception ex)
                         {
                             res.IsFinished = true;
                             Console.WriteLine(info.Url + ex.Message);
                         }
-                    }
+                    
                 });
                 res.thread = thread1;
             }
