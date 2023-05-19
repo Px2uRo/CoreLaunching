@@ -75,6 +75,7 @@ namespace CoreLaunching.PinKcatDownloader
                 }
                 catch (Exception ex)
                 {
+                    IsOK = true;
                     Failed?.Invoke(this,EventArgs.Empty);
                     _thread = CreateThread();
                 }
@@ -162,7 +163,7 @@ namespace CoreLaunching.PinKcatDownloader
         public RequestWithRange[] Requsets { get; set; }
         public MCFileInfo Info;
 
-        public static MutilFileDownloadProcess Create(MCFileInfo info,string tempRoot, long chushu = 2500000)
+        public static MutilFileDownloadProcess Create(MCFileInfo info, string tempRoot, long chushu = 2500000)
         {
             var res = new MutilFileDownloadProcess();
             res.Info = info;

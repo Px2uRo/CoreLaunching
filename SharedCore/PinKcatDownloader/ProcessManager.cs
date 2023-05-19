@@ -25,8 +25,9 @@ namespace CoreLaunching.PinKcatDownloader
             Files= files;
         }
 
-        public void Start(string temp)
+        public void Start(string temp,bool waiting = false)
         {
+            _temp = temp;
             _state = ThreadState.Running;
             var superSmall = Files.Where((x) => x.Size < 250000).ToArray();
             var small = Files.Where((x) => x.Size <= 2500000 && x.Size >= 250000).ToArray();
@@ -37,34 +38,39 @@ namespace CoreLaunching.PinKcatDownloader
             promss.OneFinished += Proms_OneFinished;
             promss.QueueEmpty += Promss_QueueEmpty;
             promss.OneFailed += Promss_OneFailed;
-            new Thread(() => promss.DownloadSingle()).Start();
+            new Thread(() => promss.DownloadSingle(waiting)).Start();
 
 
             var proms = new SingleThreadProcessManager(small);
             proms.OneFinished += Proms_OneFinished;
             proms.QueueEmpty += Promss_QueueEmpty;
             proms.OneFailed+= Promss_OneFailed;
-            new Thread(() => proms.DownloadSingle()).Start();
+            new Thread(() => proms.DownloadSingle(waiting)).Start();
 
 
             var prom = new MutilFileDownloaManager(large);
             Directory.CreateDirectory(temp);
-            prom.OnePartFinsihed += Prom_OnePartFinsihed;
-            prom.OneFinished += Proms_OneFinished;
+            prom.OneFinished += Prom_OnePartFinsihed;
             prom.QueueEmpty += Promss_QueueEmpty;
             prom.OneFailed+= Promss_OneFailed;
-            new Thread(() => prom.Download(temp)).Start();
+            new Thread(() => prom.Download(temp,waiting)).Start();
+        }
+
+        private void Prom_OnePartFinsihed(object? sender, MCFileInfo e)
+        {
+            _downloadedCount++;
+
+            DownloadedCountUpdated?.Invoke(sender, _downloadedCount);
+            if (sender is MutilFileDownloaManager)
+            {
+                _downloadedSize += e.Size;
+                DownloadedSizeUpdated?.Invoke(sender, _downloadedSize);
+            }
         }
 
         private void Promss_OneFailed(object? sender, MCFileFailedArgs e)
         {
 
-        }
-
-        private void Prom_OnePartFinsihed(object? sender, long e)
-        {
-            _downloadedSize+= e;
-            DownloadedSizeUpdated?.Invoke(sender, _downloadedSize);
         }
 
         private void Promss_QueueEmpty(object? sender, EventArgs e)
@@ -73,7 +79,7 @@ namespace CoreLaunching.PinKcatDownloader
             if(stepFinished== 3)
             {
                 _state = ThreadState.Stopped;
-                new DirectoryInfo(_temp).Delete();
+                //new DirectoryInfo(_temp).Delete(true);
                 Finished?.Invoke(this,e);
             }
         }
@@ -86,7 +92,7 @@ namespace CoreLaunching.PinKcatDownloader
             if(sender is not MutilFileDownloaManager)
             {
                 _downloadedSize += e.Size;
-                DownloadedSizeUpdated.Invoke(sender, _downloadedSize);
+                DownloadedSizeUpdated?.Invoke(sender, _downloadedSize);
             }
         }
 
@@ -132,7 +138,7 @@ namespace CoreLaunching.PinKcatDownloader
         }
         public int MaxNum = 64;
         public event EventHandler QueueEmpty;
-        public void DownloadSingle()
+        public void DownloadSingle(bool waiting = false)
         {
             Queue<MCFileInfo> queue = new();
             foreach (MCFileInfo info in Infos)
@@ -143,11 +149,21 @@ namespace CoreLaunching.PinKcatDownloader
            {
                 while (Count <= MaxNum)
                 {
-                    if (queue.Count > 0)
+                    if (queue.Count >= 8)
                     {
                         var proc = FileDownloadProgress.CreateSingle(queue.Dequeue(), out var thr);
                         proc.Finished += Proc_Finished;
                         Add(thr);
+                    }
+                    else if(queue.Count<8&&queue.Count>0)
+                    {
+                        var qu = queue.Dequeue();
+                        if (waiting)
+                        {
+                            var proc = FileDownloadProgress.CreateSingle(qu, out var thr);
+                            proc.Finished += Proc_Finished;
+                            Add(thr);
+                        }
                     }
                     else
                     {
@@ -156,11 +172,14 @@ namespace CoreLaunching.PinKcatDownloader
                 }
                 Thread.Sleep(200);
            }
-           while (Count > 0)
-           {
-
-           }
-            QueueEmpty?.Invoke(this, new());
+            if (waiting)
+            {
+                while (Count>0)
+                {
+                    Thread.Sleep(100);
+                }
+            }
+           QueueEmpty?.Invoke(this, new());
         }
         public event EventHandler<MCFileInfo> OneFinished;
         public event EventHandler<MCFileFailedArgs> OneFailed;

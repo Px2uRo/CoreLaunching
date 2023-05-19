@@ -42,7 +42,7 @@ namespace CoreLaunching.PinKcatDownloader
         public long MaxBytes = 2500000;
         private long RunningBytes = 0;
         public event EventHandler QueueEmpty;
-        public void DownloadSingle()
+        public void DownloadSingle(bool waiting = false)
         {
             Queue<MCFileInfo> queue = new();
             foreach (MCFileInfo info in Infos)
@@ -53,11 +53,22 @@ namespace CoreLaunching.PinKcatDownloader
             {
                 while (RunningBytes < MaxBytes)
                 {
-                    if (queue.Count > 0)
+                    if (queue.Count >= 32)
                     {
                         var proc = FileDownloadProgress.CreateSingle(queue.Dequeue(), out var thr);
                         proc.Finished += Proc_Finished;
                         InsertMe(Count-1,thr,proc.Info.Size);
+                        //Thread.Sleep(200);
+                    }
+                    else if (queue.Count < 32&&queue.Count>0)
+                    {
+                        var qu = queue.Dequeue();
+                        if (waiting)
+                        {
+                            var proc = FileDownloadProgress.CreateSingle(qu, out var thr);
+                            proc.Finished += Proc_Finished;
+                            InsertMe(Count - 1, thr, proc.Info.Size);
+                        }
                     }
                     else
                     {
@@ -65,6 +76,13 @@ namespace CoreLaunching.PinKcatDownloader
                     }
                 }
                 Thread.Sleep(200);
+            }
+            if (waiting)
+            {
+                while (Count > 0)
+                {
+                    Thread.Sleep(100);
+                }
             }
             QueueEmpty?.Invoke(this, new());
         }

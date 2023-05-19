@@ -24,8 +24,6 @@ namespace CoreLaunching.PinKcatDownloader
                     {
                         if (req.DownThread.ThreadState == ThreadState.Unstarted)
                         {
-                            req.WholeFinished -= Req_OnePartFinished;
-                            req.WholeFinished += Req_OnePartFinished;
                             req.DownThread.Start();
                         }
                     }
@@ -41,11 +39,6 @@ namespace CoreLaunching.PinKcatDownloader
             }
         }
 
-        private void Req_OnePartFinished(object? sender, long e)
-        {
-            OnePartFinsihed.Invoke(sender, e);
-        }
-
         public MCFileInfo[] Infos { get; set; }
         public MutilFileDownloaManager(MCFileInfo[] infos)
         {
@@ -54,7 +47,7 @@ namespace CoreLaunching.PinKcatDownloader
         public event EventHandler QueueEmpty;
         public event EventHandler<MCFileFailedArgs> OneFailed;
 
-        public void Download(string tempRoot)
+        public void Download(string tempRoot,bool waiting = false)
         {
             Queue<MCFileInfo> queue = new();
             foreach (MCFileInfo info in Infos)
@@ -68,7 +61,6 @@ namespace CoreLaunching.PinKcatDownloader
                     if (queue.Count > 0)
                     {
                         var proc = MutilFileDownloadProcess.Create(queue.Dequeue(),tempRoot);
-                        //proc.OnePartFinished 
                         proc.CombineFinished += Proc_Finished;
                         Add(proc);
                     }
@@ -79,16 +71,14 @@ namespace CoreLaunching.PinKcatDownloader
                 }
                 Thread.Sleep(500);
             }
-            while (Count > 0)
+            if (waiting)
             {
-
+                while (Count>0)
+                {
+                    Thread.Sleep(100);
+                }
             }
             QueueEmpty?.Invoke(this, new());
-        }
-
-        private void Proc_WebFinished(object? sender, RequestWithRange[] e)
-        {
-
         }
 
         public event EventHandler<long> OnePartFinsihed;
@@ -97,7 +87,7 @@ namespace CoreLaunching.PinKcatDownloader
         {
             var proc = sender as MutilFileDownloadProcess;
             Remove(proc);
-            OneFinished.Invoke(this,e);
+            OneFinished?.Invoke(this,e);
         }
     }
 }
