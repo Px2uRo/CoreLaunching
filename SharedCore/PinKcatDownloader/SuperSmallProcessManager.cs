@@ -7,10 +7,14 @@ using System.Threading.Tasks;
 
 namespace CoreLaunching.PinKcatDownloader
 {
-    public class SuperSmallProcessManager : ObservableCollection<Thread>
+    public interface IDownloadRemain
+    {
+        public IEnumerable<MCFileInfo> GetRemain();
+    }
+    public class SuperSmallProcessManager : ObservableCollection<FileDownloadProgress>,IDownloadRemain
     {
         public MCFileInfo[] Infos { get; set; }
-        private void InsertMe(int index, Thread item,long size)
+        private void InsertMe(int index, FileDownloadProgress item,long size)
         {
             var added = false;
             while (!added)
@@ -20,11 +24,11 @@ namespace CoreLaunching.PinKcatDownloader
 
                     //Console.WriteLine($"Instered {item.GetHashCode()}");
                     //Console.WriteLine(item.ThreadState);
-                    if (item.ThreadState == ThreadState.Unstarted)
+                    if (item.thread.ThreadState == ThreadState.Unstarted)
                     {
                         index = Count;
                         base.InsertItem(index, item);
-                        item.Start();
+                        item.thread.Start();
                         added = true;
                         RunningBytes += size;
                     }
@@ -57,7 +61,7 @@ namespace CoreLaunching.PinKcatDownloader
                     {
                         var proc = FileDownloadProgress.CreateSingle(queue.Dequeue(), out var thr);
                         proc.Finished += Proc_Finished;
-                        InsertMe(Count-1,thr,proc.Info.Size);
+                        InsertMe(Count-1,proc,proc.Info.Size);
                         //Thread.Sleep(200);
                     }
                     else if (queue.Count < 32&&queue.Count>0)
@@ -67,7 +71,11 @@ namespace CoreLaunching.PinKcatDownloader
                         {
                             var proc = FileDownloadProgress.CreateSingle(qu, out var thr);
                             proc.Finished += Proc_Finished;
-                            InsertMe(Count - 1, thr, proc.Info.Size);
+                            InsertMe(Count - 1, proc, proc.Info.Size);
+                        }
+                        else
+                        {
+                            _remains.Add(qu);
                         }
                     }
                     else
@@ -77,11 +85,26 @@ namespace CoreLaunching.PinKcatDownloader
                 }
                 Thread.Sleep(200);
             }
+            while (Count>96)
+            {
+                Thread.Sleep(100);
+            }
             if (waiting)
             {
                 while (Count > 0)
                 {
                     Thread.Sleep(100);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < this.Count; i++)
+                {
+                    if (this[i] != null)
+                    {
+                        this[i].BreakNow = true;
+                        _remains.Add(this[i].Info);
+                    }
                 }
             }
             QueueEmpty?.Invoke(this, new());
@@ -94,10 +117,17 @@ namespace CoreLaunching.PinKcatDownloader
         {
             var data = sender as FileDownloadProgress;
             AllLengthGetted += data.Info.Size;
-            Remove(e);
+            Remove(data);
             RunningBytes -= data.Info.Size;
             OneFinished.Invoke(this, data.Info);
         }
+
+        private List<MCFileInfo> _remains = new();
+        public IEnumerable<MCFileInfo> GetRemain()
+        {
+            return _remains;
+        }
+
         public SuperSmallProcessManager(MCFileInfo[] infos)
         {
             Infos = infos;

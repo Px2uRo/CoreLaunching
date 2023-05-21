@@ -13,6 +13,7 @@ namespace CoreLaunching.PinKcatDownloader
         int stepFinished = 0;
         private int _downloadedCount = 0;
         private long _downloadedSize = 0;
+        public long DownloadedSize =>_downloadedSize;
         public event EventHandler<int>? DownloadedCountUpdated;
         public event EventHandler<long>? DownloadedSizeUpdated;
         IEnumerable<MCFileInfo> Files;
@@ -32,34 +33,51 @@ namespace CoreLaunching.PinKcatDownloader
             var superSmall = Files.Where((x) => x.Size < 250000).ToArray();
             var small = Files.Where((x) => x.Size <= 2500000 && x.Size >= 250000).ToArray();
             var large = Files.Where((x) => x.Size > 2500000).ToArray();
-            
-            
-            var promss = new SuperSmallProcessManager(superSmall);
-            promss.OneFinished += Proms_OneFinished;
-            promss.QueueEmpty += Promss_QueueEmpty;
-            promss.OneFailed += Promss_OneFailed;
-            new Thread(() => promss.DownloadSingle(waiting)).Start();
 
+            if (superSmall.Length > 0)
+            {
+                var promss = new SuperSmallProcessManager(superSmall);
+                promss.OneFinished += Proms_OneFinished;
+                promss.QueueEmpty += Promss_QueueEmpty;
+                promss.OneFailed += Promss_OneFailed;
+                new Thread(() => promss.DownloadSingle(waiting)).Start();
+            }
+            else
+            {
+                stepFinished++;
+            }
 
-            var proms = new SingleThreadProcessManager(small);
-            proms.OneFinished += Proms_OneFinished;
-            proms.QueueEmpty += Promss_QueueEmpty;
-            proms.OneFailed+= Promss_OneFailed;
-            new Thread(() => proms.DownloadSingle(waiting)).Start();
+            if(small.Length > 0)
+            {
+                var proms = new SingleThreadProcessManager(small);
+                proms.OneFinished += Proms_OneFinished;
+                proms.QueueEmpty += Promss_QueueEmpty;
+                proms.OneFailed += Promss_OneFailed;
+                new Thread(() => proms.DownloadSingle(waiting)).Start();
+            }
+            else
+            {
+                stepFinished++;
+            }
 
-
-            var prom = new MutilFileDownloaManager(large);
-            Directory.CreateDirectory(temp);
-            prom.OneFinished += Prom_OnePartFinsihed;
-            prom.QueueEmpty += Promss_QueueEmpty;
-            prom.OneFailed+= Promss_OneFailed;
-            new Thread(() => prom.Download(temp,waiting)).Start();
+            if(large.Length > 0)
+            {
+                var prom = new MutilFileDownloaManager(large);
+                Directory.CreateDirectory(temp);
+                prom.OneFinished += Prom_OnePartFinsihed;
+                prom.QueueEmpty += Promss_QueueEmpty;
+                prom.OneFailed += Promss_OneFailed;
+                new Thread(() => prom.Download(temp, waiting)).Start();
+            }
+            else
+            {
+                stepFinished++;
+            }
         }
-
+        public List<MCFileInfo> Remains = new();
         private void Prom_OnePartFinsihed(object? sender, MCFileInfo e)
         {
             _downloadedCount++;
-
             DownloadedCountUpdated?.Invoke(sender, _downloadedCount);
             if (sender is MutilFileDownloaManager)
             {
@@ -76,7 +94,11 @@ namespace CoreLaunching.PinKcatDownloader
         private void Promss_QueueEmpty(object? sender, EventArgs e)
         {
             stepFinished++;
-            if(stepFinished== 3)
+            if (sender is IDownloadRemain rm)
+            {
+                Remains.AddRange(rm.GetRemain());
+            }
+            if (stepFinished== 3)
             {
                 _state = ThreadState.Stopped;
                 //new DirectoryInfo(_temp).Delete(true);
@@ -105,10 +127,10 @@ namespace CoreLaunching.PinKcatDownloader
             }
         }
     }
-    public class SingleThreadProcessManager:ObservableCollection<Thread>
+    public class SingleThreadProcessManager:ObservableCollection<FileDownloadProgress>,IDownloadRemain
     {
         public MCFileInfo[] Infos { get; set; }
-        protected override void InsertItem(int index, Thread item)
+        protected override void InsertItem(int index, FileDownloadProgress item)
         {
             var added = false;
             while (!added)
@@ -118,11 +140,11 @@ namespace CoreLaunching.PinKcatDownloader
                     
                     //Console.WriteLine($"Instered {item.GetHashCode()}");
                     //Console.WriteLine(item.ThreadState);
-                    if(item.ThreadState == ThreadState.Unstarted)
+                    if(item.thread.ThreadState == ThreadState.Unstarted)
                     {
                         index = Count;
                         base.InsertItem(index, item);
-                        item.Start();
+                        item.thread.Start();
                         added = true;
                     }
                     else
@@ -153,7 +175,7 @@ namespace CoreLaunching.PinKcatDownloader
                     {
                         var proc = FileDownloadProgress.CreateSingle(queue.Dequeue(), out var thr);
                         proc.Finished += Proc_Finished;
-                        Add(thr);
+                        Add(proc);
                     }
                     else if(queue.Count<8&&queue.Count>0)
                     {
@@ -162,13 +184,18 @@ namespace CoreLaunching.PinKcatDownloader
                         {
                             var proc = FileDownloadProgress.CreateSingle(qu, out var thr);
                             proc.Finished += Proc_Finished;
-                            Add(thr);
+                            Add(proc);
+                        }
+                        else
+                        {
+                            _remain.Add(qu);
                         }
                     }
                     else
                     {
                         break;
                     }
+
                 }
                 Thread.Sleep(200);
            }
@@ -177,6 +204,18 @@ namespace CoreLaunching.PinKcatDownloader
                 while (Count>0)
                 {
                     Thread.Sleep(100);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < this.Count; i++)
+                {
+                    if (this[i] !=null)
+                    {
+
+                    }
+                    this[i].BreakNow = true;
+                    _remain.Add(this[i].Info);
                 }
             }
            QueueEmpty?.Invoke(this, new());
@@ -188,9 +227,16 @@ namespace CoreLaunching.PinKcatDownloader
         {
             var data = sender as FileDownloadProgress;
             AllLengthGetted += data.Info.Size;
-            Remove(e);
+            Remove(data);
             OneFinished.Invoke(this,data.Info);
         }
+
+        List<MCFileInfo> _remain = new List<MCFileInfo>();
+        public IEnumerable<MCFileInfo> GetRemain()
+        {
+            return _remain;
+        }
+
         public SingleThreadProcessManager(MCFileInfo[] infos)
         {
             Infos= infos;

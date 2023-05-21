@@ -30,6 +30,8 @@ namespace CoreLaunching.PinKcatDownloader
         public Thread thread;
         public MCFileInfo Info;
 
+        public bool BreakNow;
+
         public static FileDownloadProgress CreateSingle(MCFileInfo info, out Thread thread)
         {
             var res = new FileDownloadProgress();
@@ -37,18 +39,30 @@ namespace CoreLaunching.PinKcatDownloader
             if (info.Size < 2500000)
             {
                 var thread1 = new Thread(() => {
-                    using (var clt = new WebClient())
+                    var request = WebRequest.CreateHttp(info.Url);
+                    using (var response = request.GetResponse())
                     {
-                        try
+                        using (var stream = response.GetResponseStream())
                         {
                             Directory.CreateDirectory(Path.GetDirectoryName(info.Local));
-                            clt.DownloadFile(info.Url, info.Local);
-                            res.IsFinished = true;
-                        }
-                        catch (Exception ex)
-                        {
-                            res.IsFinished = true;
-                            Console.WriteLine(info.Url + ex.Message);
+                            try
+                            {
+                                using (var fstream = File.Create(info.Local))
+                                {
+                                    var nbytes = new byte[4096];
+                                    var nreadsize = stream.Read(nbytes, 0, 4096);
+                                    while (nreadsize > 0 && res.BreakNow != true)
+                                    {
+                                        fstream.Write(nbytes, 0, nreadsize);
+                                        nreadsize = stream.Read(nbytes, 0, 4096);
+                                    }
+                                    res.IsFinished = true;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                res.IsFinished = true;
+                            }
                         }
                     }
                 });

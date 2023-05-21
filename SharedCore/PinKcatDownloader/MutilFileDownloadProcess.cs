@@ -138,11 +138,18 @@ namespace CoreLaunching.PinKcatDownloader
                 {
                     foreach (var item in this.Requsets)
                     {
-                        using (var tempFs = File.OpenRead(item.LocalTempPath))
+                        try
                         {
-                            tempFs.CopyTo(finalfs);
+                            using (var tempFs = File.OpenRead(item.LocalTempPath))
+                            {
+                                tempFs.CopyTo(finalfs);
+                            }
+                            new FileInfo(item.LocalTempPath).Delete();
                         }
-                        new FileInfo(item.LocalTempPath).Delete();
+                        catch
+                        {
+
+                        }
                     }
                 }
                 CombineFinished.Invoke(this,Info);
